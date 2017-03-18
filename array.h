@@ -12,14 +12,6 @@ namespace xtree
 template<typename T_value, size_t A_size>
 class t_array : public t_tree
 {
-	struct t_node : t_tree::t_node
-	{
-		t_node(size_t a_size) : t_tree::t_node(a_size)
-		{
-		}
-		virtual void f_at(size_t a_index, std::vector<t_location>& a_path) = 0;
-		virtual void f_dump(size_t a_level, const std::function<void(size_t, size_t)>& a_dump) const = 0;
-	};
 	struct t_leaf : t_node
 	{
 		char v_data[sizeof(T_value) * A_size];
@@ -51,10 +43,6 @@ class t_array : public t_tree
 			a_p->v_size = A_size / 2 + 1;
 			f_destruct(p, r);
 		}
-		virtual void f_clear();
-		virtual t_node* f_node(size_t a_i);
-		virtual void f_at(size_t a_index, std::vector<t_location>& a_path);
-		virtual void f_dump(size_t a_level, const std::function<void(size_t, size_t)>& a_dump) const;
 		T_value* f_values()
 		{
 			return reinterpret_cast<T_value*>(v_data);
@@ -161,10 +149,6 @@ class t_array : public t_tree
 			v_nodes[0] = a_node;
 			std::copy(p, q, v_nodes + 1);
 		}
-		virtual void f_clear();
-		virtual t_node* f_node(size_t a_i);
-		virtual void f_at(size_t a_index, std::vector<t_location>& a_path);
-		virtual void f_dump(size_t a_level, const std::function<void(size_t, size_t)>& a_dump) const;
 		void f_insert(size_t a_i, size_t a_index, t_node* a_node)
 		{
 			auto p = v_nodes + 1;
@@ -249,20 +233,32 @@ class t_array : public t_tree
 		}
 	};
 
-	static void f_normalize(std::vector<t_location>& a_path)
+	void f_last(std::vector<t_location>& a_path) const
+	{
+		while (a_path.size() < v_depth) {
+			auto p = a_path.back();
+			auto q = static_cast<t_branch*>(p.v_node)->v_nodes[p.v_index];
+			a_path.push_back(t_location(q, q->v_size));
+		}
+	}
+	void f_normalize(std::vector<t_location>& a_path) const
 	{
 		if (a_path.back().f_more()) return;
-		t_tree::f_normalize(a_path);
+		while (!a_path.back().f_more() && a_path.size() > 1) a_path.pop_back();
 		if (!a_path.back().f_more()) return;
 		++a_path.back().v_index;
-		f_first(a_path);
+		while (a_path.size() < v_depth) {
+			auto p = a_path.back();
+			auto q = static_cast<t_branch*>(p.v_node)->v_nodes[p.v_index];
+			a_path.push_back(t_location(q, 0));
+		}
 	}
-	static void f_forward(std::vector<t_location>& a_path)
+	void f_forward(std::vector<t_location>& a_path) const
 	{
 		++a_path.back().v_index;
 		f_normalize(a_path);
 	}
-	static void f_backward(std::vector<t_location>& a_path)
+	void f_backward(std::vector<t_location>& a_path) const
 	{
 		if (a_path.back().v_index <= 0) {
 			do a_path.pop_back(); while (a_path.back().v_index <= 0);
@@ -286,6 +282,16 @@ class t_array : public t_tree
 		}
 	}
 
+	void f_clear(size_t a_level, t_node* a_node)
+	{
+		if (++a_level < v_depth) {
+			auto p = static_cast<t_branch*>(a_node);
+			for (size_t i = 0; i <= p->v_size; ++i) f_clear(a_level, p->v_nodes[i]);
+			delete p;
+		} else {
+			delete static_cast<t_leaf*>(a_node);
+		}
+	}
 	void f_insert_leaf(std::vector<t_location>& a_path, const T_value& a_value);
 	void f_insert_branch(std::vector<t_location>& a_path, size_t a_index, t_node* a_node, bool a_right);
 	void f_erase_leaf(std::vector<t_location>& a_path);
@@ -294,8 +300,27 @@ class t_array : public t_tree
 	{
 		if (a_index >= v_size) return f_end_path();
 		auto p = new t_path();
-		static_cast<t_node*>(v_root)->f_at(a_index, p->v_path);
+		auto q = v_root;
+		for (auto n = v_depth; --n > 0;) {
+			auto r = static_cast<t_branch*>(q);
+			auto& indices = r->v_indices;
+			size_t i = std::upper_bound(indices, indices + r->v_size, a_index) - indices;
+			p->v_path.push_back(t_location(r, i));
+			if (i > 0) a_index -= indices[i - 1];
+			q = r->v_nodes[i];
+		}
+		p->v_path.push_back(t_location(q, a_index));
 		return p;
+	}
+	void f_dump(size_t a_level, t_node* a_node, const std::function<void(size_t, size_t)>& a_dump) const
+	{
+		if (a_level + 1 >= v_depth) return;
+		auto p = static_cast<t_branch*>(a_node);
+		for (size_t i = 0; i < p->v_size; ++i) {
+			f_dump(a_level + 1, p->v_nodes[i], a_dump);
+			a_dump(a_level, p->v_indices[i]);
+		}
+		f_dump(a_level + 1, p->v_nodes[p->v_size], a_dump);
 	}
 
 public:
@@ -311,7 +336,7 @@ public:
 		t_iterator(const t_iterator& a_x) : t_trivial(a_x)
 		{
 		}
-		t_iterator(t_path* a_p) : t_trivial(a_p)
+		t_iterator(t_array* a_tree, t_path* a_p) : t_trivial(a_tree, a_p)
 		{
 		}
 		t_iterator& operator=(const t_iterator& a_x)
@@ -330,7 +355,7 @@ public:
 		t_iterator& operator++()
 		{
 			f_own();
-			if (!v_p->v_path.empty()) f_forward(v_p->v_path);
+			if (!v_p->v_path.empty()) static_cast<const t_array*>(v_tree)->f_forward(v_p->v_path);
 			return *this;
 		}
 		t_iterator operator++(int) const
@@ -342,7 +367,7 @@ public:
 		t_iterator& operator--()
 		{
 			f_own();
-			if (!v_p->v_path.empty()) f_backward(v_p->v_path);
+			if (!v_p->v_path.empty()) static_cast<const t_array*>(v_tree)->f_backward(v_p->v_path);
 			return *this;
 		}
 		t_iterator operator--(int) const
@@ -366,7 +391,7 @@ public:
 		t_constant_iterator(const t_iterator& a_x) : t_trivial(a_x)
 		{
 		}
-		t_constant_iterator(t_path* a_p) : t_trivial(a_p)
+		t_constant_iterator(const t_array* a_tree, t_path* a_p) : t_trivial(a_tree, a_p)
 		{
 		}
 		t_constant_iterator& operator=(const t_constant_iterator& a_x)
@@ -390,7 +415,7 @@ public:
 		t_constant_iterator& operator++()
 		{
 			f_own();
-			if (!v_p->v_path.empty()) f_forward(v_p->v_path);
+			if (!v_p->v_path.empty()) static_cast<const t_array*>(v_tree)->f_forward(v_p->v_path);
 			return *this;
 		}
 		t_constant_iterator operator++(int) const
@@ -402,7 +427,7 @@ public:
 		t_constant_iterator& operator--()
 		{
 			f_own();
-			if (!v_p->v_path.empty()) f_backward(v_p->v_path);
+			if (!v_p->v_path.empty()) static_cast<const t_array*>(v_tree)->f_backward(v_p->v_path);
 			return *this;
 		}
 		t_constant_iterator operator--(int) const
@@ -413,21 +438,34 @@ public:
 		}
 	};
 
+	~t_array()
+	{
+		f_clear();
+	}
+	void f_clear()
+	{
+		if (!v_root) return;
+		f_clear(0, v_root);
+		v_root = nullptr;
+		v_size = v_depth = 0;
+		f_begin_path()->v_path.clear();
+		f_end_path()->v_path.clear();
+	}
 	t_iterator f_begin()
 	{
-		return f_begin_path();
+		return t_iterator(this, f_begin_path());
 	}
 	t_constant_iterator f_begin() const
 	{
-		return f_begin_path();
+		return t_constant_iterator(this, f_begin_path());
 	}
 	t_iterator f_end()
 	{
-		return f_end_path();
+		return t_iterator(this, f_end_path());
 	}
 	t_constant_iterator f_end() const
 	{
-		return f_end_path();
+		return t_constant_iterator(this, f_end_path());
 	}
 	t_iterator f_insert(t_iterator a_i, const T_value& a_value)
 	{
@@ -449,72 +487,17 @@ public:
 	}
 	t_iterator f_at(size_t a_index)
 	{
-		return f_at_path(a_index);
+		return t_iterator(this, f_at_path(a_index));
 	}
 	t_constant_iterator f_at(size_t a_index) const
 	{
-		return f_at_path(a_index);
+		return t_constant_iterator(this, f_at_path(a_index));
 	}
 	void f_dump(const std::function<void(size_t, size_t)>& a_dump) const
 	{
-		if (v_root) static_cast<t_node*>(v_root)->f_dump(0, a_dump);
+		f_dump(0, v_root, a_dump);
 	}
 };
-
-template<typename T_value, size_t A_size>
-void t_array<T_value, A_size>::t_leaf::f_clear()
-{
-	delete this;
-}
-
-template<typename T_value, size_t A_size>
-typename t_array<T_value, A_size>::t_node* t_array<T_value, A_size>::t_leaf::f_node(size_t a_i)
-{
-	return nullptr;
-}
-
-template<typename T_value, size_t A_size>
-void t_array<T_value, A_size>::t_leaf::f_at(size_t a_index, std::vector<t_location>& a_path)
-{
-	a_path.push_back(t_location(this, a_index));
-}
-
-template<typename T_value, size_t A_size>
-void t_array<T_value, A_size>::t_leaf::f_dump(size_t a_level, const std::function<void(size_t, size_t)>& a_dump) const
-{
-}
-
-template<typename T_value, size_t A_size>
-void t_array<T_value, A_size>::t_branch::f_clear()
-{
-	for (size_t i = 0; i <= this->v_size; ++i) v_nodes[i]->f_clear();
-	delete this;
-}
-
-template<typename T_value, size_t A_size>
-typename t_array<T_value, A_size>::t_node* t_array<T_value, A_size>::t_branch::f_node(size_t a_i)
-{
-	return v_nodes[a_i];
-}
-
-template<typename T_value, size_t A_size>
-void t_array<T_value, A_size>::t_branch::f_at(size_t a_index, std::vector<t_location>& a_path)
-{
-	size_t i = std::upper_bound(v_indices, v_indices + this->v_size, a_index) - v_indices;
-	a_path.push_back(t_location(this, i));
-	if (i > 0) a_index -= v_indices[i - 1];
-	v_nodes[i]->f_at(a_index, a_path);
-}
-
-template<typename T_value, size_t A_size>
-void t_array<T_value, A_size>::t_branch::f_dump(size_t a_level, const std::function<void(size_t, size_t)>& a_dump) const
-{
-	for (size_t i = 0; i < this->v_size; ++i) {
-		v_nodes[i]->f_dump(a_level + 1, a_dump);
-		a_dump(a_level, v_indices[i]);
-	}
-	v_nodes[this->v_size]->f_dump(a_level + 1, a_dump);
-}
 
 template<typename T_value, size_t A_size>
 void t_array<T_value, A_size>::f_insert_leaf(std::vector<t_location>& a_path, const T_value& a_value)
@@ -674,7 +657,7 @@ void t_array<T_value, A_size>::f_erase_branch(std::vector<t_location>& a_path)
 			f_end_path()->v_path[0].v_index = v_root->v_size;
 			a_path.push_back(t_location(p, i));
 		} else {
-			v_root = p->f_node(0);
+			v_root = p->v_nodes[0];
 			delete p;
 			f_pop_root();
 			f_end_path()->v_path[0] = t_location(v_root, v_root->v_size);

@@ -16,8 +16,6 @@ protected:
 		t_node(size_t a_size) : v_size(a_size)
 		{
 		}
-		virtual void f_clear() = 0;
-		virtual t_node* f_node(size_t a_i) = 0;
 	};
 	struct t_location
 	{
@@ -38,10 +36,6 @@ protected:
 		bool f_more() const
 		{
 			return v_index < v_node->v_size;
-		}
-		t_node* operator*() const
-		{
-			return v_node->f_node(v_index);
 		}
 	};
 	struct t_path
@@ -105,21 +99,10 @@ protected:
 		}
 		return a_i;
 	}
-	static void f_first(std::vector<t_location>& a_path)
-	{
-		for (auto p = *a_path.back(); p; p = p->f_node(0)) a_path.push_back(t_location(p, 0));
-	}
-	static void f_last(std::vector<t_location>& a_path)
-	{
-		for (auto p = *a_path.back(); p; p = p->f_node(p->v_size)) a_path.push_back(t_location(p, p->v_size));
-	}
-	static void f_normalize(std::vector<t_location>& a_path)
-	{
-		while (!a_path.back().f_more() && a_path.size() > 1) a_path.pop_back();
-	}
 
 	t_node* v_root = nullptr;
 	size_t v_size = 0;
+	size_t v_depth = 0;
 
 public:
 	class t_trivial
@@ -127,17 +110,18 @@ public:
 		friend class t_tree;
 
 	protected:
+		const t_tree* v_tree = nullptr;
 		t_path* v_p;
 
 		t_trivial() : v_p(new t_path())
 		{
 			++v_p->v_count;
 		}
-		t_trivial(const t_trivial& a_x) : v_p(a_x.v_p)
+		t_trivial(const t_trivial& a_x) : v_tree(a_x.v_tree), v_p(a_x.v_p)
 		{
 			++v_p->v_count;
 		}
-		t_trivial(t_path* a_p) : v_p(a_p)
+		t_trivial(const t_tree* a_tree, t_path* a_p) : v_tree(a_tree), v_p(a_p)
 		{
 			++v_p->v_count;
 		}
@@ -147,6 +131,7 @@ public:
 		}
 		void f_assign(const t_trivial& a_x)
 		{
+			v_tree = a_x.v_tree;
 			++a_x.v_p->v_count;
 			if (--v_p->v_count <= 0) delete v_p;
 			v_p = a_x.v_p;
@@ -183,11 +168,13 @@ protected:
 	{
 		auto& path = v_begin.v_p->v_path;
 		path.insert(path.begin(), t_location(v_root, 0));
+		++v_depth;
 	}
 	void f_pop_root()
 	{
 		auto& path = v_begin.v_p->v_path;
 		path.erase(path.begin());
+		--v_depth;
 	}
 	t_path* f_end_path() const
 	{
@@ -195,10 +182,6 @@ protected:
 	}
 
 public:
-	~t_tree()
-	{
-		f_clear();
-	}
 	size_t f_size() const
 	{
 		return v_size;
@@ -206,15 +189,6 @@ public:
 	bool f_empty() const
 	{
 		return v_size <= 0;
-	}
-	void f_clear()
-	{
-		if (!v_root) return;
-		v_root->f_clear();
-		v_root = nullptr;
-		v_size = 0;
-		v_begin.v_p->v_path.clear();
-		v_end.v_p->v_path.clear();
 	}
 };
 
