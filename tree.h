@@ -1,25 +1,15 @@
 #ifndef XTREE__TREE_H
 #define XTREE__TREE_H
 
-#include <vector>
-
 namespace xtree
 {
 
 class t_tree
 {
 protected:
-	struct t_node
-	{
-		size_t v_size;
-
-		t_node(size_t a_size) : v_size(a_size)
-		{
-		}
-	};
 	struct t_location
 	{
-		t_node* v_node;
+		void* v_node;
 		size_t v_index;
 	};
 
@@ -69,7 +59,7 @@ protected:
 		return a_i;
 	}
 
-	t_node* v_root = nullptr;
+	void* v_root = nullptr;
 	size_t v_size = 0;
 	size_t v_depth = 0;
 

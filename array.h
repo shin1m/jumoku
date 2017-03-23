@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "tree.h"
 
@@ -18,16 +19,17 @@ class t_array : public t_tree
 		t_leaf* v_previous;
 		t_leaf* v_next;
 	};
-	struct t_leaf : t_node, t_link
+	struct t_leaf : t_link
 	{
+		size_t v_size;
 		char v_data[sizeof(T_value) * A_size];
 
-		t_leaf(t_leaf* a_p, const T_value& a_value) : t_node(1)
+		t_leaf(t_leaf* a_p, const T_value& a_value) : v_size(1)
 		{
 			f_link(a_p);
 			f_construct(f_values(), a_value);
 		}
-		t_leaf(size_t a_i, const T_value& a_value, t_leaf* a_p) : t_node((A_size + 1) / 2)
+		t_leaf(size_t a_i, const T_value& a_value, t_leaf* a_p) : v_size((A_size + 1) / 2)
 		{
 			f_link(a_p);
 			auto p = a_p->f_values() + A_size / 2;
@@ -37,7 +39,7 @@ class t_array : public t_tree
 			f_destruct(p, q);
 			f_construct(f_shift(a_p->f_values() + a_i, p), a_value);
 		}
-		t_leaf(t_leaf* a_p, size_t a_i, const T_value& a_value) : t_node((A_size + 1) / 2)
+		t_leaf(t_leaf* a_p, size_t a_i, const T_value& a_value) : v_size((A_size + 1) / 2)
 		{
 			f_link(a_p);
 			auto p = a_p->f_values() + A_size / 2 + 1;
@@ -104,7 +106,7 @@ class t_array : public t_tree
 			std::copy(q, q + A_size / 2, std::raw_storage_iterator<T_value*, T_value>(p + A_size / 2 - 1));
 		}
 	};
-	struct t_branch : t_node
+	struct t_branch
 	{
 		static size_t* f_copy_forward(const size_t* a_p, const size_t* a_q, size_t* a_r, int a_shift)
 		{
@@ -117,16 +119,17 @@ class t_array : public t_tree
 			return a_r;
 		}
 
+		size_t v_size;
 		size_t v_indices[A_size];
-		t_node* v_nodes[A_size + 1];
+		void* v_nodes[A_size + 1];
 
-		t_branch(t_node* a_root, size_t a_index, t_node* a_node) : t_node(1)
+		t_branch(void* a_root, size_t a_index, void* a_node) : v_size(1)
 		{
 			v_indices[0] = a_index;
 			v_nodes[0] = a_root;
 			v_nodes[1] = a_node;
 		}
-		t_branch(size_t a_i, size_t a_index, t_node* a_node, t_branch* a_p) : t_node(A_size / 2)
+		t_branch(size_t a_i, size_t a_index, void* a_node, t_branch* a_p) : v_size(A_size / 2)
 		{
 			{
 				size_t* p = a_p->v_indices + (A_size + 1) / 2;
@@ -141,7 +144,7 @@ class t_array : public t_tree
 			std::copy(p, a_p->v_nodes + A_size + 1, v_nodes);
 			*f_shift(a_p->v_nodes + a_i + 1, p) = a_node;
 		}
-		t_branch(t_branch* a_p, size_t a_i, size_t a_index, t_node* a_node) : t_node(A_size / 2)
+		t_branch(t_branch* a_p, size_t a_i, size_t a_index, void* a_node) : v_size(A_size / 2)
 		{
 			{
 				size_t* p = a_p->v_indices + (A_size + 1) / 2;
@@ -158,7 +161,7 @@ class t_array : public t_tree
 			*i = a_node;
 			std::copy(q, a_p->v_nodes + A_size + 1, ++i);
 		}
-		t_branch(t_branch* a_p, size_t a_index, t_node* a_node) : t_node(A_size / 2)
+		t_branch(t_branch* a_p, size_t a_index, void* a_node) : v_size(A_size / 2)
 		{
 			f_copy_forward(a_p->v_indices + (A_size + 1) / 2, a_p->v_indices + A_size, v_indices, -a_index + 1);
 			a_p->v_size = (A_size + 1) / 2;
@@ -167,7 +170,7 @@ class t_array : public t_tree
 			v_nodes[0] = a_node;
 			std::copy(p, q, v_nodes + 1);
 		}
-		void f_insert(size_t a_i, size_t a_index, t_node* a_node)
+		void f_insert(size_t a_i, size_t a_index, void* a_node)
 		{
 			auto p = v_nodes + 1;
 			*f_shift(p + a_i, p + this->v_size) = a_node;
@@ -262,7 +265,7 @@ class t_array : public t_tree
 
 	t_link v_link;
 
-	void f_clear(size_t a_level, t_node* a_node)
+	void f_clear(size_t a_level, void* a_node)
 	{
 		if (++a_level < v_depth) {
 			auto p = static_cast<t_branch*>(a_node);
@@ -273,7 +276,7 @@ class t_array : public t_tree
 		}
 	}
 	void f_insert_leaf(std::vector<t_location>& a_path, const T_value& a_value);
-	void f_insert_branch(std::vector<t_location>& a_path, size_t a_index, t_node* a_node, bool a_right);
+	void f_insert_branch(std::vector<t_location>& a_path, size_t a_index, void* a_node, bool a_right);
 	void f_erase_leaf(std::vector<t_location>& a_path);
 	void f_erase_branch(std::vector<t_location>& a_path);
 	void f_at(size_t a_index, std::vector<t_location>& a_path) const
@@ -289,7 +292,7 @@ class t_array : public t_tree
 		}
 		a_path.push_back({p, a_index});
 	}
-	void f_dump(size_t a_level, t_node* a_node, const std::function<void(size_t, size_t)>& a_dump) const
+	void f_dump(size_t a_level, void* a_node, const std::function<void(size_t, size_t)>& a_dump) const
 	{
 		if (a_level + 1 >= v_depth) return;
 		auto p = static_cast<t_branch*>(a_node);
@@ -301,67 +304,60 @@ class t_array : public t_tree
 	}
 
 public:
-	class t_trivial
+	template<typename T>
+	class t_iterator
 	{
-		friend class t_array<T_value, A_size>;
+		friend class t_array;
 
-	protected:
-		T_value* v_p;
+		std::remove_const_t<T>* v_p;
 		t_leaf* v_leaf;
 		size_t v_index;
 
-		t_trivial() = default;
-		t_trivial(T_value* a_p, t_leaf* a_leaf, size_t a_index) : v_p(a_p), v_leaf(a_leaf), v_index(a_index)
+		t_iterator(const t_location& a_p, size_t a_index) : v_p(static_cast<t_leaf*>(a_p.v_node)->f_values() + a_p.v_index), v_leaf(static_cast<t_leaf*>(a_p.v_node)), v_index(a_index)
 		{
 		}
-		void f_forward()
+
+	public:
+		typedef std::ptrdiff_t difference_type;
+		typedef T value_type;
+		typedef T* pointer;
+		typedef T& reference;
+		typedef std::bidirectional_iterator_tag iterator_category;
+
+		t_iterator() = default;
+		t_iterator(const t_iterator<std::remove_const_t<T>>& a_x) : v_p(a_x.v_p), v_leaf(a_x.v_leaf), v_index(a_x.v_index)
+		{
+		}
+		t_iterator& operator=(const t_iterator<std::remove_const_t<T>>& a_x)
+		{
+			v_p = a_x.v_p;
+			v_leaf = a_x.v_leaf;
+			v_index = a_x.v_index;
+			return *this;
+		}
+		bool operator==(const t_iterator& a_x) const
+		{
+			return v_p == a_x.v_p;
+		}
+		bool operator!=(const t_iterator& a_x) const
+		{
+			return !(*this == a_x);
+		}
+		T& operator*() const
+		{
+			return *this->v_p;
+		}
+		T* operator->() const
+		{
+			return this->v_p;
+		}
+		t_iterator& operator++()
 		{
 			if (++v_p == v_leaf->f_values() + v_leaf->v_size) {
 				v_leaf = v_leaf->v_next;
 				v_p = v_leaf->f_values();
 			}
 			++v_index;
-		}
-		void f_backward()
-		{
-			if (v_p == v_leaf->f_values()) {
-				v_leaf = v_leaf->v_previous;
-				v_p = v_leaf->v_values() + v_leaf->v_size;
-			}
-			--v_p;
-			--v_index;
-		}
-
-	public:
-		bool operator==(const t_trivial& a_x) const
-		{
-			return v_p == a_x.v_p;
-		}
-		bool operator!=(const t_trivial& a_x) const
-		{
-			return !(*this == a_x);
-		}
-	};
-	struct t_iterator : std::iterator<std::bidirectional_iterator_tag, T_value>, t_trivial
-	{
-		typedef T_value* pointer;
-		typedef T_value& reference;
-
-		t_iterator() = default;
-		t_iterator(T_value* a_p, t_leaf* a_leaf, size_t a_index) : t_trivial(a_p, a_leaf, a_index)
-		{
-		}
-		T_value& operator*() const
-		{
-			return *this->v_p;
-		}
-		T_value* operator->() const
-		{
-			return this->v_p;
-		}
-		t_iterator& operator++()
-		{
-			this->f_forward();
 			return *this;
 		}
 		t_iterator operator++(int) const
@@ -372,7 +368,12 @@ public:
 		}
 		t_iterator& operator--()
 		{
-			this->f_backward();
+			if (v_p == v_leaf->f_values()) {
+				v_leaf = v_leaf->v_previous;
+				v_p = v_leaf->v_values() + v_leaf->v_size;
+			}
+			--v_p;
+			--v_index;
 			return *this;
 		}
 		t_iterator operator--(int) const
@@ -382,54 +383,8 @@ public:
 			return i;
 		}
 	};
-	struct t_constant_iterator : std::iterator<std::bidirectional_iterator_tag, T_value>, t_trivial
-	{
-		typedef const T_value* pointer;
-		typedef const T_value& reference;
-
-		t_constant_iterator() = default;
-		t_constant_iterator(const t_iterator& a_x) : t_trivial(a_x)
-		{
-		}
-		t_constant_iterator(T_value* a_p, t_leaf* a_leaf, size_t a_index) : t_trivial(a_p, a_leaf, a_index)
-		{
-		}
-		t_constant_iterator& operator=(const t_iterator& a_x)
-		{
-			t_trivial::operator=(a_x);
-			return *this;
-		}
-		const T_value& operator*() const
-		{
-			return *this->v_p;
-		}
-		const T_value* operator->() const
-		{
-			return this->v_p;
-		}
-		t_constant_iterator& operator++()
-		{
-			this->f_forward();
-			return *this;
-		}
-		t_constant_iterator operator++(int) const
-		{
-			auto i = *this;
-			++*this;
-			return i;
-		}
-		t_constant_iterator& operator--()
-		{
-			this->f_backward();
-			return *this;
-		}
-		t_constant_iterator operator--(int) const
-		{
-			auto i = *this;
-			--*this;
-			return i;
-		}
-	};
+	typedef t_iterator<T_value> t_mutable_iterator;
+	typedef t_iterator<const T_value> t_constant_iterator;
 
 	t_array()
 	{
@@ -447,68 +402,52 @@ public:
 		v_size = v_depth = 0;
 		v_link.v_previous = v_link.v_next = static_cast<t_leaf*>(&v_link);
 	}
-	t_iterator f_begin()
+	t_mutable_iterator f_begin()
 	{
-		auto p = v_link.v_next;
-		return t_iterator(p->f_values(), p, 0);
+		return {{v_link.v_next, 0}, 0};
 	}
 	t_constant_iterator f_begin() const
 	{
-		auto p = v_link.v_next;
-		return t_constant_iterator(p->f_values(), p, 0);
+		return {{v_link.v_next, 0}, 0};
 	}
-	t_iterator f_end()
+	t_mutable_iterator f_end()
 	{
-		auto p = static_cast<t_leaf*>(&v_link);
-		return t_iterator(p->f_values(), p, 0);
+		return {{&v_link, 0}, 0};
 	}
 	t_constant_iterator f_end() const
 	{
-		auto p = static_cast<t_leaf*>(const_cast<t_link*>(&v_link));
-		return t_constant_iterator(p->f_values(), p, 0);
+		return {{const_cast<t_link*>(&v_link), 0}, 0};
 	}
-	t_iterator f_insert(t_iterator a_i, const T_value& a_value)
+	t_mutable_iterator f_insert(t_mutable_iterator a_i, const T_value& a_value)
 	{
-		if (f_empty()) {
-			v_root = a_i.v_leaf = new t_leaf(static_cast<t_leaf*>(&v_link), a_value);
+		if (v_size++ <= 0) {
+			v_root = new t_leaf(static_cast<t_leaf*>(&v_link), a_value);
 			++v_depth;
-			a_i.v_p = a_i.v_leaf->f_values();
-		} else {
-			std::vector<t_location> path;
-			f_at(a_i.v_index, path);
-			f_insert_leaf(path, a_value);
-			a_i.v_leaf = static_cast<t_leaf*>(path.back().v_node);
-			a_i.v_p = a_i.v_leaf->f_values() + path.back().v_index;
+			return f_begin();
 		}
-		++v_size;
-		return a_i;
+		std::vector<t_location> path;
+		f_at(a_i.v_index, path);
+		f_insert_leaf(path, a_value);
+		return {path.back(), a_i.v_index};
 	}
-	t_iterator f_erase(t_iterator a_i)
+	t_mutable_iterator f_erase(t_mutable_iterator a_i)
 	{
 		std::vector<t_location> path;
 		f_at(a_i.v_index, path);
 		f_erase_leaf(path);
-		--v_size;
-		if (f_empty()) return f_end();
-		a_i.v_leaf = static_cast<t_leaf*>(path.back().v_node);
-		a_i.v_p = a_i.v_leaf->f_values() + path.back().v_index;
-		return a_i;
+		if (--v_size <= 0) return f_end();
+		return {path.back(), a_i.v_index};
 	}
-	t_iterator f_at(size_t a_index)
+	t_mutable_iterator f_at(size_t a_index)
 	{
-		if (f_empty()) return f_end();
+		if (v_size <= 0) return f_end();
 		std::vector<t_location> path;
 		f_at(a_index, path);
-		auto p = static_cast<t_leaf*>(path.back().v_node);
-		return t_iterator(p->f_values() + path.back().v_index, p, a_index);
+		return {path.back(), a_index};
 	}
 	t_constant_iterator f_at(size_t a_index) const
 	{
-		if (f_empty()) return f_end();
-		std::vector<t_location> path;
-		f_at(a_index, path);
-		auto p = static_cast<t_leaf*>(path.back().v_node);
-		return t_constant_iterator(p->f_values() + path.back().v_index, p, a_index);
+		return const_cast<t_array*>(this)->f_at(a_index);
 	}
 	void f_dump(const std::function<void(size_t, size_t)>& a_dump) const
 	{
@@ -538,10 +477,10 @@ void t_array<T_value, A_size>::f_insert_leaf(std::vector<t_location>& a_path, co
 }
 
 template<typename T_value, size_t A_size>
-void t_array<T_value, A_size>::f_insert_branch(std::vector<t_location>& a_path, size_t a_index, t_node* a_node, bool a_right)
+void t_array<T_value, A_size>::f_insert_branch(std::vector<t_location>& a_path, size_t a_index, void* a_node, bool a_right)
 {
 	if (a_path.empty()) {
-		v_root = new t_branch(static_cast<t_node*>(v_root), a_index, a_node);
+		v_root = new t_branch(v_root, a_index, a_node);
 		++v_depth;
 		a_path.push_back({v_root, a_right ? 1u : 0u});
 		return;
