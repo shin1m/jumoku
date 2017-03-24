@@ -7,12 +7,6 @@ namespace xtree
 class t_tree
 {
 protected:
-	struct t_location
-	{
-		void* v_node;
-		size_t v_index;
-	};
-
 	template<typename T>
 	static T* f_construct(T* a_p, const T& a_x)
 	{

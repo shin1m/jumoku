@@ -253,6 +253,20 @@ class t_array : public t_tree
 			}
 		}
 	};
+	struct t_location
+	{
+		void* v_node;
+		size_t v_index;
+
+		t_location f_step()
+		{
+			auto p = static_cast<t_branch*>(v_node);
+			size_t i = std::upper_bound(p->v_indices, p->v_indices + p->v_size, v_index) - p->v_indices;
+			if (i > 0) v_index -= p->v_indices[i - 1];
+			v_node = p->v_nodes[i];
+			return {p, i};
+		}
+	};
 
 	static void f_adjust(const std::vector<t_location>& a_path, int a_delta)
 	{
@@ -281,16 +295,9 @@ class t_array : public t_tree
 	void f_erase_branch(std::vector<t_location>& a_path);
 	void f_at(size_t a_index, std::vector<t_location>& a_path) const
 	{
-		auto p = v_root;
-		for (size_t n = v_depth; --n > 0;) {
-			auto q = static_cast<t_branch*>(p);
-			auto& indices = q->v_indices;
-			size_t i = std::upper_bound(indices, indices + q->v_size, a_index) - indices;
-			a_path.push_back({q, i});
-			if (i > 0) a_index -= indices[i - 1];
-			p = q->v_nodes[i];
-		}
-		a_path.push_back({p, a_index});
+		t_location i{v_root, a_index};
+		for (size_t n = v_depth; --n > 0;) a_path.push_back(i.f_step());
+		a_path.push_back(i);
 	}
 	void f_dump(size_t a_level, void* a_node, const std::function<void(size_t, size_t)>& a_dump) const
 	{
@@ -441,9 +448,9 @@ public:
 	t_mutable_iterator f_at(size_t a_index)
 	{
 		if (v_size <= 0) return f_end();
-		std::vector<t_location> path;
-		f_at(a_index, path);
-		return {path.back(), a_index};
+		t_location i{v_root, a_index};
+		for (size_t n = v_depth; --n > 0;) i.f_step();
+		return {i, a_index};
 	}
 	t_constant_iterator f_at(size_t a_index) const
 	{
