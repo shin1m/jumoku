@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <cassert>
 
 #include "array.h"
