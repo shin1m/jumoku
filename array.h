@@ -72,17 +72,32 @@ class t_array : public t_tree
 			f_construct(f_shift(p + a_i, p + this->v_size), a_value);
 			++this->v_size;
 		}
+		void f_insert(t_leaf* a_p, size_t a_i, const T_value& a_value)
+		{
+			auto p = f_values();
+			f_move(a_p->f_values() + a_p->v_size, p);
+			++a_p->v_size;
+			f_construct(f_unshift(p, p + a_i), a_value);
+		}
+		void f_insert(size_t a_i, const T_value& a_value, t_leaf* a_p)
+		{
+			auto p = f_values();
+			auto q = a_p->f_values();
+			f_move(f_shift(q, q + a_p->v_size), p + A_size - 1);
+			++a_p->v_size;
+			f_construct(f_shift(p + a_i, p + A_size), a_value);
+		}
 		void f_erase(size_t a_i)
 		{
 			auto p = f_values();
 			f_unshift(f_destruct(p + a_i), p + --this->v_size);
 		}
-		void f_rotate(t_leaf* a_p, size_t a_i)
+		void f_erase(t_leaf* a_p, size_t a_i)
 		{
 			auto p = a_p->f_values();
 			f_move(f_shift(p, f_destruct(p + a_i)), f_values() + --this->v_size);
 		}
-		void f_rotate(size_t a_i, t_leaf* a_p)
+		void f_erase(size_t a_i, t_leaf* a_p)
 		{
 			auto p = f_values();
 			auto q = a_p->f_values();
@@ -188,7 +203,7 @@ class t_array : public t_tree
 			f_copy_forward(p + 1, v_indices + this->v_size, p, -1);
 			--this->v_size;
 		}
-		void f_rotate(size_t a_base, size_t& a_index, t_branch* a_p, size_t a_i)
+		void f_erase(size_t a_base, size_t& a_index, t_branch* a_p, size_t a_i)
 		{
 			auto p = a_p->v_nodes;
 			*f_shift(p, p + a_i + 1) = v_nodes[this->v_size];
@@ -204,7 +219,7 @@ class t_array : public t_tree
 				while (++p != q) *p += shift;
 			}
 		}
-		void f_rotate(size_t a_i, size_t a_base, size_t& a_index, t_branch* a_p)
+		void f_erase(size_t a_i, size_t a_base, size_t& a_index, t_branch* a_p)
 		{
 			auto p = v_nodes;
 			auto q = a_p->v_nodes;
@@ -417,11 +432,11 @@ public:
 	}
 	t_mutable_iterator f_end()
 	{
-		return {{&v_link, 0}, 0};
+		return {{&v_link, 0}, v_size};
 	}
 	t_constant_iterator f_end() const
 	{
-		return {{const_cast<t_link*>(&v_link), 0}, 0};
+		return {{const_cast<t_link*>(&v_link), 0}, v_size};
 	}
 	t_mutable_iterator f_insert(t_constant_iterator a_i, const T_value& a_value)
 	{
@@ -438,12 +453,14 @@ public:
 	{
 		t_location path[v_depth];
 		f_at(a_i.v_index, path);
+		auto p = f_erase_leaf(path, path + v_depth);
 		--v_size;
-		return {f_erase_leaf(path, path + v_depth), a_i.v_index};
+		auto q = static_cast<t_leaf*>(p.v_node);
+		return {p.v_index < q->v_size ? p : t_location{q->v_next, 0}, a_i.v_index};
 	}
 	t_mutable_iterator f_at(size_t a_index)
 	{
-		if (v_size <= 0) return f_end();
+		if (a_index >= v_size) return f_end();
 		t_location i{v_root, a_index};
 		for (size_t n = v_depth; --n > 0;) i.f_step();
 		return {i, a_index};
@@ -467,7 +484,35 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 		p->f_insert(i, a_value);
 		f_adjust(a_first, a_last, 1);
 		return {p, i};
-	} else if (i < (A_size + 1) / 2) {
+	}
+	if (v_depth > 1) {
+		auto q = static_cast<t_branch*>(a_last[-1].v_node);
+		size_t j = a_last[-1].v_index;
+		if (j > 0) {
+			auto r = p->v_previous;
+			if (r->v_size < A_size) {
+				++q->v_indices[j - 1];
+				f_adjust(a_first, a_last, 1);
+				if (i > 0) {
+					p->f_insert(r, --i, a_value);
+					return {p, i};
+				} else {
+					r->f_values()[r->v_size] = a_value;
+					return {r, r->v_size++};
+				}
+			}
+		}
+		if (j < q->v_size) {
+			auto r = p->v_next;
+			if (r->v_size < A_size) {
+				p->f_insert(i, a_value, r);
+				--q->v_indices[j];
+				f_adjust(a_first, a_last, 1);
+				return {p, i};
+			}
+		}
+	}
+	if (i < (A_size + 1) / 2) {
 		auto q = new t_leaf(i, a_value, p);
 		f_insert_branch(a_first, a_last, (A_size + 1) / 2, q, false);
 		return {p, i};
@@ -556,9 +601,9 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_erase_
 	auto q = static_cast<t_branch*>(a_last[-1].v_node);
 	size_t j = a_last[-1].v_index;
 	if (j > 0) {
-		auto r = static_cast<t_leaf*>(q->v_nodes[j - 1]);
+		auto r = p->v_previous;
 		if (r->v_size > A_size / 2) {
-			r->f_rotate(p, i);
+			r->f_erase(p, i);
 			--q->v_indices[j - 1];
 			f_adjust(a_first, a_last, -1);
 			return {p, i + 1};
@@ -570,9 +615,9 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_erase_
 			return {r, i + A_size / 2};
 		}
 	}
-	auto r = static_cast<t_leaf*>(q->v_nodes[j + 1]);
+	auto r = p->v_next;
 	if (r->v_size > A_size / 2) {
-		p->f_rotate(i, r);
+		p->f_erase(i, r);
 		++q->v_indices[j];
 		f_adjust(a_first, a_last, -1);
 	} else {
@@ -610,7 +655,7 @@ typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_erase
 		auto r = static_cast<t_branch*>(q->v_nodes[j - 1]);
 		if (r->v_size > A_size / 2) {
 			size_t base = j > 1 ? q->v_indices[j - 2] : 0;
-			r->f_rotate(base, q->v_indices[j - 1], p, i);
+			r->f_erase(base, q->v_indices[j - 1], p, i);
 			f_adjust(a_first, a_last, -1);
 			*a_last = {p, i + 1};
 			return ++a_last;
@@ -626,7 +671,7 @@ typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_erase
 	auto r = static_cast<t_branch*>(q->v_nodes[j + 1]);
 	size_t base = j > 0 ? q->v_indices[j - 1] : 0;
 	if (r->v_size > A_size / 2) {
-		p->f_rotate(i, base, q->v_indices[j], r);
+		p->f_erase(i, base, q->v_indices[j], r);
 		f_adjust(a_first, a_last, -1);
 	} else {
 		p->f_merge(i, base, q->v_indices[j], r);
