@@ -2,7 +2,7 @@
 #define XTREE__ARRAY_H
 
 #include <algorithm>
-#include <memory>
+#include <functional>
 
 #include "tree.h"
 
@@ -23,32 +23,30 @@ class t_array : public t_tree
 		size_t v_size;
 		char v_data[sizeof(T_value) * A_size];
 
-		t_leaf(t_leaf* a_p, const T_value& a_value) : v_size(1)
+		template<typename T>
+		t_leaf(t_leaf* a_p, T&& a_value) : v_size(1)
 		{
 			f_link(a_p);
-			f_construct(f_values(), a_value);
+			f_construct(f_values(), std::forward<T>(a_value));
 		}
-		t_leaf(size_t a_i, const T_value& a_value, t_leaf* a_p) : v_size((A_size + 1) / 2)
+		template<typename T>
+		t_leaf(size_t a_i, T&& a_value, t_leaf* a_p) : v_size((A_size + 1) / 2)
 		{
 			f_link(a_p);
 			auto p = a_p->f_values() + A_size / 2;
-			auto q = a_p->f_values() + A_size;
-			std::copy(p, q, std::raw_storage_iterator<T_value*, T_value>(f_values()));
+			f_move(p, a_p->f_values() + A_size, f_values());
+			f_construct(f_shift(a_p->f_values() + a_i, p), std::forward<T>(a_value));
 			a_p->v_size = A_size / 2 + 1;
-			f_destruct(p, q);
-			f_construct(f_shift(a_p->f_values() + a_i, p), a_value);
 		}
-		t_leaf(t_leaf* a_p, size_t a_i, const T_value& a_value) : v_size((A_size + 1) / 2)
+		template<typename T>
+		t_leaf(t_leaf* a_p, size_t a_i, T&& a_value) : v_size((A_size + 1) / 2)
 		{
 			f_link(a_p);
-			auto p = a_p->f_values() + A_size / 2 + 1;
-			auto q = a_p->f_values() + a_i;
-			auto r = a_p->f_values() + A_size;
-			auto i = std::copy(p, q, std::raw_storage_iterator<T_value*, T_value>(f_values()));
-			*i = a_value;
-			std::copy(q, r, ++i);
+			auto p = a_p->f_values() + a_i;
+			auto q = f_move(a_p->f_values() + A_size / 2 + 1, p, f_values());
+			*q = std::forward<T>(a_value);
+			f_move(p, a_p->f_values() + A_size, ++q);
 			a_p->v_size = A_size / 2 + 1;
-			f_destruct(p, r);
 		}
 		void f_link(t_leaf* a_p)
 		{
@@ -66,26 +64,29 @@ class t_array : public t_tree
 		{
 			return reinterpret_cast<T_value*>(v_data);
 		}
-		void f_insert(size_t a_i, const T_value& a_value)
+		template<typename T>
+		void f_insert(size_t a_i, T&& a_value)
 		{
 			auto p = f_values();
-			f_construct(f_shift(p + a_i, p + this->v_size), a_value);
+			f_construct(f_shift(p + a_i, p + this->v_size), std::forward<T>(a_value));
 			++this->v_size;
 		}
-		void f_insert(t_leaf* a_p, size_t a_i, const T_value& a_value)
+		template<typename T>
+		void f_insert(t_leaf* a_p, size_t a_i, T&& a_value)
 		{
 			auto p = f_values();
 			f_move(a_p->f_values() + a_p->v_size, p);
 			++a_p->v_size;
-			f_construct(f_unshift(p, p + a_i), a_value);
+			f_construct(f_unshift(p, p + a_i), std::forward<T>(a_value));
 		}
-		void f_insert(size_t a_i, const T_value& a_value, t_leaf* a_p)
+		template<typename T>
+		void f_insert(size_t a_i, T&& a_value, t_leaf* a_p)
 		{
 			auto p = f_values();
 			auto q = a_p->f_values();
 			f_move(f_shift(q, q + a_p->v_size), p + A_size - 1);
 			++a_p->v_size;
-			f_construct(f_shift(p + a_i, p + A_size), a_value);
+			f_construct(f_shift(p + a_i, p + A_size), std::forward<T>(a_value));
 		}
 		void f_erase(size_t a_i)
 		{
@@ -108,16 +109,15 @@ class t_array : public t_tree
 		{
 			this->v_size = A_size / 2 * 2 - 1;
 			auto p = a_p->f_values();
-			auto i = std::copy(p, p + a_i, std::raw_storage_iterator<T_value*, T_value>(f_values() + A_size / 2));
-			std::copy(p + a_i + 1, p + A_size / 2, i);
+			auto q = p + a_i;
+			f_move(q + 1, p + A_size / 2, f_move(p, q, f_values() + A_size / 2));
 		}
 		void f_merge(size_t a_i, t_leaf* a_p)
 		{
 			this->v_size = A_size / 2 * 2 - 1;
 			auto p = f_values();
 			auto q = a_p->f_values();
-			f_unshift(f_destruct(p + a_i), p + A_size / 2 - 1);
-			std::copy(q, q + A_size / 2, std::raw_storage_iterator<T_value*, T_value>(p + A_size / 2 - 1));
+			f_move(q, q + A_size / 2, f_unshift(f_destruct(p + a_i), p + A_size / 2 - 1));
 		}
 	};
 	struct t_branch
@@ -302,7 +302,8 @@ class t_array : public t_tree
 			delete static_cast<t_leaf*>(a_node);
 		}
 	}
-	t_location f_insert_leaf(t_location* a_first, t_location* a_last, const T_value& a_value);
+	template<typename T>
+	t_location f_insert_leaf(t_location* a_first, t_location* a_last, T&& a_value);
 	t_location* f_insert_branch(t_location* a_first, t_location* a_last, size_t a_index, void* a_node, bool a_right);
 	t_location f_erase_leaf(t_location* a_first, t_location* a_last);
 	t_location* f_erase_branch(t_location* a_first, t_location* a_last);
@@ -438,16 +439,17 @@ public:
 	{
 		return {{const_cast<t_link*>(&v_link), 0}, v_size};
 	}
-	t_mutable_iterator f_insert(t_constant_iterator a_i, const T_value& a_value)
+	template<typename T>
+	t_mutable_iterator f_insert(t_constant_iterator a_i, T&& a_value)
 	{
 		if (v_size++ <= 0) {
-			v_root = new t_leaf(static_cast<t_leaf*>(&v_link), a_value);
+			v_root = new t_leaf(static_cast<t_leaf*>(&v_link), std::forward<T>(a_value));
 			++v_depth;
 			return f_begin();
 		}
 		t_location path[v_depth + 1];
 		f_at(a_i.v_index, path);
-		return {f_insert_leaf(path, path + v_depth, a_value), a_i.v_index};
+		return {f_insert_leaf(path, path + v_depth, std::forward<T>(a_value)), a_i.v_index};
 	}
 	t_mutable_iterator f_erase(t_constant_iterator a_i)
 	{
@@ -476,12 +478,13 @@ public:
 };
 
 template<typename T_value, size_t A_size>
-typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert_leaf(t_location* a_first, t_location* a_last, const T_value& a_value)
+template<typename T>
+typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert_leaf(t_location* a_first, t_location* a_last, T&& a_value)
 {
 	auto p = static_cast<t_leaf*>((--a_last)->v_node);
 	size_t i = a_last->v_index;
 	if (p->v_size < A_size) {
-		p->f_insert(i, a_value);
+		p->f_insert(i, std::forward<T>(a_value));
 		f_adjust(a_first, a_last, 1);
 		return {p, i};
 	}
@@ -494,10 +497,10 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 				++q->v_indices[j - 1];
 				f_adjust(a_first, a_last, 1);
 				if (i > 0) {
-					p->f_insert(r, --i, a_value);
+					p->f_insert(r, --i, std::forward<T>(a_value));
 					return {p, i};
 				} else {
-					r->f_values()[r->v_size] = a_value;
+					r->f_values()[r->v_size] = std::forward<T>(a_value);
 					return {r, r->v_size++};
 				}
 			}
@@ -505,7 +508,7 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 		if (j < q->v_size) {
 			auto r = p->v_next;
 			if (r->v_size < A_size) {
-				p->f_insert(i, a_value, r);
+				p->f_insert(i, std::forward<T>(a_value), r);
 				--q->v_indices[j];
 				f_adjust(a_first, a_last, 1);
 				return {p, i};
@@ -513,11 +516,11 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 		}
 	}
 	if (i < (A_size + 1) / 2) {
-		auto q = new t_leaf(i, a_value, p);
+		auto q = new t_leaf(i, std::forward<T>(a_value), p);
 		f_insert_branch(a_first, a_last, (A_size + 1) / 2, q, false);
 		return {p, i};
 	} else {
-		auto q = new t_leaf(p, i, a_value);
+		auto q = new t_leaf(p, i, std::forward<T>(a_value));
 		f_insert_branch(a_first, a_last, (A_size + 1) / 2, q, true);
 		return {q, i - (A_size + 1) / 2};
 	}

@@ -59,10 +59,7 @@ void f_test_insert(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1
 template<typename T_value, size_t A_size>
 void f_test_erase(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
 {
-	{
-		auto i = a1.begin() + a_i;
-		a1.erase(i, i + a_n);
-	}
+	a1.erase(a1.begin() + a_i, a1.begin() + a_i + a_n);
 	auto i = a0.f_at(a_i);
 	for (size_t j = 0; j < a_n; ++j) {
 		i = a0.f_erase(i);
