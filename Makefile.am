@@ -1,6 +1,7 @@
 EXTRA_DIST = \
 	tree.h \
-	array.h
+	array.h \
+	test_array.h
 
 CLEANFILES = *.gcda *.gcno *.gcov
 
@@ -18,5 +19,5 @@ AM_CXXFLAGS += -pg
 AM_LDFLAGS += -pg
 endif
 AM_DEFAULT_SOURCE_EXT = .cc
-check_PROGRAMS = test_array
+check_PROGRAMS = test_array test_array_insert
 TESTS = $(check_PROGRAMS)

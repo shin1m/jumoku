@@ -1,4 +1,4 @@
-AC_INIT([xtree], [201703])
+AC_INIT([xtree], [201704])
 AM_INIT_AUTOMAKE([foreign nostdinc dist-bzip2 no-dist-gzip])
 AC_CONFIG_SRCDIR([tree.h])
 

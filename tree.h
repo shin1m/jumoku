@@ -39,20 +39,20 @@ protected:
 		return a_p;
 	}
 	template<typename T>
-	static T* f_shift(T* a_i, T* a_j)
+	static T* f_shift(T* a_i, T* a_j, size_t a_n)
 	{
 		while (a_j != a_i) {
-			T* p = a_j;
-			f_move(p, --a_j);
+			--a_j;
+			f_move(a_j + a_n, a_j);
 		}
 		return a_j;
 	}
 	template<typename T>
-	static T* f_unshift(T* a_i, T* a_j)
+	static T* f_unshift(T* a_i, T* a_j, size_t a_n)
 	{
 		while (a_i != a_j) {
-			T* p = a_i;
-			f_move(p, ++a_i);
+			f_move(a_i, a_i + a_n);
+			++a_i;
 		}
 		return a_i;
 	}
