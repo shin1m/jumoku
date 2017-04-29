@@ -9,7 +9,7 @@
 namespace xtree
 {
 
-template<typename T_value, size_t A_size>
+template<typename T_value, size_t A_leaf, size_t A_branch>
 class t_array : public t_tree
 {
 	struct t_leaf;
@@ -21,7 +21,7 @@ class t_array : public t_tree
 	struct t_leaf : t_link
 	{
 		size_t v_size;
-		char v_data[sizeof(T_value) * A_size];
+		char v_data[sizeof(T_value) * A_leaf];
 
 		t_leaf(t_leaf* a_p, size_t a_n) : v_size(a_n)
 		{
@@ -46,21 +46,21 @@ class t_array : public t_tree
 			std::uninitialized_copy_n(a_first, a_n, f_values());
 		}
 		template<typename T>
-		t_leaf(size_t a_i, T&& a_value, t_leaf* a_p) : t_leaf(a_p, (A_size + 1) / 2)
+		t_leaf(size_t a_i, T&& a_value, t_leaf* a_p) : t_leaf(a_p, (A_leaf + 1) / 2)
 		{
-			auto p = a_p->f_values() + A_size / 2;
-			f_move(p, a_p->f_values() + A_size, f_values());
+			auto p = a_p->f_values() + A_leaf / 2;
+			f_move(p, a_p->f_values() + A_leaf, f_values());
 			f_construct(f_shift(a_p->f_values() + a_i, p, 1), std::forward<T>(a_value));
-			a_p->v_size = A_size / 2 + 1;
+			a_p->v_size = A_leaf / 2 + 1;
 		}
 		template<typename T>
-		t_leaf(t_leaf* a_p, size_t a_i, T&& a_value) : t_leaf(a_p, (A_size + 1) / 2)
+		t_leaf(t_leaf* a_p, size_t a_i, T&& a_value) : t_leaf(a_p, (A_leaf + 1) / 2)
 		{
 			auto p = a_p->f_values() + a_i;
-			auto q = f_move(a_p->f_values() + A_size / 2 + 1, p, f_values());
+			auto q = f_move(a_p->f_values() + A_leaf / 2 + 1, p, f_values());
 			*q = std::forward<T>(a_value);
-			f_move(p, a_p->f_values() + A_size, ++q);
-			a_p->v_size = A_size / 2 + 1;
+			f_move(p, a_p->f_values() + A_leaf, ++q);
+			a_p->v_size = A_leaf / 2 + 1;
 		}
 		void f_unlink()
 		{
@@ -99,9 +99,9 @@ class t_array : public t_tree
 		{
 			auto p = f_values();
 			auto q = a_p->f_values();
-			f_move(f_shift(q, q + a_p->v_size, 1), p + A_size - 1);
+			f_move(f_shift(q, q + a_p->v_size, 1), p + A_leaf - 1);
 			++a_p->v_size;
-			f_construct(f_shift(p + a_i, p + A_size, 1), std::forward<T>(a_value));
+			f_construct(f_shift(p + a_i, p + A_leaf - 1, 1), std::forward<T>(a_value));
 		}
 		void f_slide(size_t a_i, size_t a_j)
 		{
@@ -123,13 +123,13 @@ class t_array : public t_tree
 		void f_erase(t_leaf* a_p, size_t a_shift, size_t a_i, size_t a_n)
 		{
 			this->v_size -= a_shift;
-			a_p->v_size = A_size / 2;
+			a_p->v_size = A_leaf / 2;
 			auto p = a_p->f_values();
 			auto q = p + a_i;
 			f_destruct(q, q + a_n);
 			auto r = f_values() + this->v_size;
 			f_move(r, r + a_shift, f_shift(p, q, a_shift));
-			f_unshift(q + a_shift, p + A_size / 2, a_n - a_shift);
+			f_unshift(q + a_shift, p + A_leaf / 2, a_n - a_shift);
 		}
 		void f_erase(size_t a_i, size_t a_n, size_t a_shift, t_leaf* a_p)
 		{
@@ -138,7 +138,7 @@ class t_array : public t_tree
 			f_destruct(q, q + a_n);
 			auto r = a_p->f_values();
 			f_move(r, r + a_shift, f_unshift(q, p + this->v_size - a_n, a_n));
-			this->v_size = A_size / 2;
+			this->v_size = A_leaf / 2;
 			a_p->v_size -= a_shift;
 			f_unshift(r, r + a_p->v_size, a_shift);
 		}
@@ -175,8 +175,8 @@ class t_array : public t_tree
 		}
 
 		size_t v_size;
-		size_t v_indices[A_size];
-		void* v_nodes[A_size + 1];
+		size_t v_indices[A_branch];
+		void* v_nodes[A_branch + 1];
 
 		t_branch(void* a_left, size_t a_index, void* a_right) : v_size(1)
 		{
@@ -184,44 +184,44 @@ class t_array : public t_tree
 			v_nodes[0] = a_left;
 			v_nodes[1] = a_right;
 		}
-		t_branch(size_t a_i, size_t a_index, size_t a_delta, void* a_node, bool a_right, t_branch* a_p) : v_size(A_size / 2)
+		t_branch(size_t a_i, size_t a_index, size_t a_delta, void* a_node, bool a_right, t_branch* a_p) : v_size(A_branch / 2)
 		{
 			{
-				size_t* p = a_p->v_indices + (A_size + 1) / 2;
+				size_t* p = a_p->v_indices + (A_branch + 1) / 2;
 				size_t* q = p - 1;
-				f_copy_forward(p, a_p->v_indices + A_size, v_indices, -*q);
-				a_p->v_size = (A_size + 1) / 2;
+				f_copy_forward(p, a_p->v_indices + A_branch, v_indices, -*q);
+				a_p->v_size = (A_branch + 1) / 2;
 				size_t* r = a_p->v_indices + a_i;
 				f_copy_backward(r, q, p, a_delta);
 				*r = a_index;
 			}
-			auto p = a_p->v_nodes + (A_size + 1) / 2;
-			std::copy(p, a_p->v_nodes + A_size + 1, v_nodes);
+			auto p = a_p->v_nodes + (A_branch + 1) / 2;
+			std::copy(p, a_p->v_nodes + A_branch + 1, v_nodes);
 			*f_shift(a_p->v_nodes + a_i + (a_right ? 1 : 0), p, 1) = a_node;
 		}
-		t_branch(t_branch* a_p, size_t a_i, size_t a_index, size_t a_delta, void* a_node, bool a_right) : v_size(A_size / 2)
+		t_branch(t_branch* a_p, size_t a_i, size_t a_index, size_t a_delta, void* a_node, bool a_right) : v_size(A_branch / 2)
 		{
 			{
-				size_t* p = a_p->v_indices + (A_size + 1) / 2;
+				size_t* p = a_p->v_indices + (A_branch + 1) / 2;
 				int delta = -*p;
 				size_t* q = a_p->v_indices + a_i;
 				size_t* r = f_copy_forward(++p, q, v_indices, delta);
 				*r = a_index + delta;
-				f_copy_forward(q, a_p->v_indices + A_size, ++r, delta + a_delta);
-				a_p->v_size = (A_size + 1) / 2;
+				f_copy_forward(q, a_p->v_indices + A_branch, ++r, delta + a_delta);
+				a_p->v_size = (A_branch + 1) / 2;
 			}
-			auto p = a_p->v_nodes + (A_size + 1) / 2 + 1;
+			auto p = a_p->v_nodes + (A_branch + 1) / 2 + 1;
 			auto q = a_p->v_nodes + a_i + (a_right ? 1 : 0);
 			auto i = std::copy(p, q, v_nodes);
 			*i = a_node;
-			std::copy(q, a_p->v_nodes + A_size + 1, ++i);
+			std::copy(q, a_p->v_nodes + A_branch + 1, ++i);
 		}
-		t_branch(t_branch* a_p, size_t a_index, size_t a_delta, void* a_node, bool a_right) : v_size(A_size / 2)
+		t_branch(t_branch* a_p, size_t a_index, size_t a_delta, void* a_node, bool a_right) : v_size(A_branch / 2)
 		{
-			f_copy_forward(a_p->v_indices + (A_size + 1) / 2, a_p->v_indices + A_size, v_indices, -a_index + a_delta);
-			a_p->v_size = (A_size + 1) / 2;
-			auto p = a_p->v_nodes + (A_size + 1) / 2;
-			auto q = a_p->v_nodes + A_size + 1;
+			f_copy_forward(a_p->v_indices + (A_branch + 1) / 2, a_p->v_indices + A_branch, v_indices, -a_index + a_delta);
+			a_p->v_size = (A_branch + 1) / 2;
+			auto p = a_p->v_nodes + (A_branch + 1) / 2;
+			auto q = a_p->v_nodes + A_branch + 1;
 			if (a_right) {
 				v_nodes[0] = a_node;
 				std::copy(p + 1, q, v_nodes + 1);
@@ -269,14 +269,14 @@ class t_array : public t_tree
 		{
 			auto p = v_nodes;
 			auto q = a_p->v_nodes;
-			*f_unshift(p + a_i + 1, p + A_size / 2, 1) = *q;
+			*f_unshift(p + a_i + 1, p + A_branch / 2, 1) = *q;
 			f_unshift(q, q + a_p->v_size, 1);
 			size_t index = a_index - a_base;
 			size_t delta = a_p->v_indices[0];
 			a_index += delta;
 			{
 				size_t* p = v_indices + a_i;
-				size_t* q = f_copy_forward(p + 1, v_indices + A_size / 2, p, -a_delta);
+				size_t* q = f_copy_forward(p + 1, v_indices + A_branch / 2, p, -a_delta);
 				*q = index - a_delta;
 				p = a_p->v_indices;
 				f_copy_forward(p + 1, p + a_p->v_size, p, -delta);
@@ -286,31 +286,31 @@ class t_array : public t_tree
 		void f_merge(size_t a_base, size_t a_index, t_branch* a_p, size_t a_i, size_t a_delta)
 		{
 			auto p = a_p->v_nodes;
-			auto i = std::copy(p, p + a_i + 1, v_nodes + A_size / 2 + 1);
-			std::copy(p + a_i + 2, p + A_size / 2 + 1, i);
-			this->v_size = A_size / 2 * 2;
+			auto i = std::copy(p, p + a_i + 1, v_nodes + A_branch / 2 + 1);
+			std::copy(p + a_i + 2, p + A_branch / 2 + 1, i);
+			this->v_size = A_branch / 2 * 2;
 			size_t delta = a_index - a_base;
 			{
-				size_t* p = v_indices + A_size / 2;
+				size_t* p = v_indices + A_branch / 2;
 				*p = delta;
 				size_t* q = a_p->v_indices + a_i;
 				p = f_copy_forward(a_p->v_indices, q, ++p, delta);
-				f_copy_forward(++q, a_p->v_indices + A_size / 2, p, delta - a_delta);
+				f_copy_forward(++q, a_p->v_indices + A_branch / 2, p, delta - a_delta);
 			}
 		}
 		void f_merge(size_t a_i, size_t a_delta, size_t a_base, size_t a_index, t_branch* a_p)
 		{
-			f_unshift(v_nodes + a_i + 1, v_nodes + A_size / 2, 1);
+			f_unshift(v_nodes + a_i + 1, v_nodes + A_branch / 2, 1);
 			auto q = a_p->v_nodes;
-			std::copy(q, q + A_size / 2 + 1, v_nodes + A_size / 2);
-			this->v_size = A_size / 2 * 2;
+			std::copy(q, q + A_branch / 2 + 1, v_nodes + A_branch / 2);
+			this->v_size = A_branch / 2 * 2;
 			size_t delta = a_index - a_base - a_delta;
 			{
 				size_t* p = v_indices + a_i;
-				size_t* q = v_indices + A_size / 2;
+				size_t* q = v_indices + A_branch / 2;
 				p = f_copy_forward(p + 1, q, p, -a_delta);
 				*p = delta;
-				f_copy_forward(a_p->v_indices, a_p->v_indices + A_size / 2, ++p, delta);
+				f_copy_forward(a_p->v_indices, a_p->v_indices + A_branch / 2, ++p, delta);
 			}
 		}
 	};
@@ -339,6 +339,12 @@ class t_array : public t_tree
 
 	t_link v_link;
 
+	size_t f_depth(size_t a_n) const
+	{
+		size_t depth = v_depth + 1;
+		for (a_n /= A_leaf / 2; a_n > 0; a_n /= (A_branch / 2) + 1) ++depth;
+		return depth;
+	}
 	void f_clear(size_t a_level, void* a_node)
 	{
 		if (++a_level < v_depth) {
@@ -510,21 +516,17 @@ public:
 		size_t n = a_last - a_first;
 		v_size += n;
 		if (v_depth > 0) {
-			size_t depth = v_depth;
-			for (size_t d = n; d > 0; d /= A_size / 2) ++depth;
-			t_location path[depth];
+			t_location path[f_depth(n)];
 			f_at(a_i.v_index, path);
 			return {f_insert_leaf(path, path + v_depth, a_first, n), a_i.v_index};
 		}
-		size_t m = std::min(n, A_size);
+		size_t m = std::min(n, A_leaf);
 		v_root = new t_leaf(static_cast<t_leaf*>(&v_link), a_first, m);
 		++v_depth;
 		n -= m;
 		if (n > 0) {
-			size_t depth = v_depth;
-			for (size_t d = n; d > 0; d /= A_size / 2) ++depth;
-			t_location path[depth] = {{v_root, m}};
-			f_insert_leaf(path, path + v_depth, a_first + m, n);
+			t_location path[f_depth(n)] = {{v_root, m}};
+			f_insert_leaf(path, path + 1, a_first + m, n);
 		}
 		return f_begin();
 	}
@@ -609,13 +611,13 @@ public:
 	}
 };
 
-template<typename T_value, size_t A_size>
+template<typename T_value, size_t A_leaf, size_t A_branch>
 template<typename T>
-typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert_leaf(t_location* a_head, t_location* a_tail, T&& a_value)
+typename t_array<T_value, A_leaf, A_branch>::t_location t_array<T_value, A_leaf, A_branch>::f_insert_leaf(t_location* a_head, t_location* a_tail, T&& a_value)
 {
 	auto p = static_cast<t_leaf*>((--a_tail)->v_node);
 	size_t i = a_tail->v_index;
-	if (p->v_size < A_size) {
+	if (p->v_size < A_leaf) {
 		p->f_insert(i, std::forward<T>(a_value));
 		f_adjust(a_head, a_tail, 1);
 		return {p, i};
@@ -625,7 +627,7 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 		size_t j = a_tail[-1].v_index;
 		if (j > 0) {
 			auto r = p->v_previous;
-			if (r->v_size < A_size) {
+			if (r->v_size < A_leaf) {
 				++q->v_indices[j - 1];
 				f_adjust(a_head, a_tail, 1);
 				if (i > 0) {
@@ -639,7 +641,7 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 		}
 		if (j < q->v_size) {
 			auto r = p->v_next;
-			if (r->v_size < A_size) {
+			if (r->v_size < A_leaf) {
 				p->f_insert(i, std::forward<T>(a_value), r);
 				--q->v_indices[j];
 				f_adjust(a_head, a_tail, 1);
@@ -647,20 +649,20 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 			}
 		}
 	}
-	if (i < (A_size + 1) / 2) {
+	if (i < A_leaf / 2 + 1) {
 		auto q = new t_leaf(i, std::forward<T>(a_value), p);
-		f_insert_branch(a_head, a_tail, (A_size + 1) / 2, 1, q, true, false);
+		f_insert_branch(a_head, a_tail, A_leaf / 2 + 1, 1, q, true, false);
 		return {p, i};
 	} else {
 		auto q = new t_leaf(p, i, std::forward<T>(a_value));
-		f_insert_branch(a_head, a_tail, (A_size + 1) / 2, 1, q, true, true);
-		return {q, i - (A_size + 1) / 2};
+		f_insert_branch(a_head, a_tail, A_leaf / 2 + 1, 1, q, true, true);
+		return {q, i - (A_leaf / 2 + 1)};
 	}
 }
 
-template<typename T_value, size_t A_size>
+template<typename T_value, size_t A_leaf, size_t A_branch>
 template<typename T>
-typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert_leaf(t_location* a_head, t_location* a_tail, T a_first, size_t a_n)
+typename t_array<T_value, A_leaf, A_branch>::t_location t_array<T_value, A_leaf, A_branch>::f_insert_leaf(t_location* a_head, t_location* a_tail, T a_first, size_t a_n)
 {
 	// |= N  =| |= N =| |= N  =|
 	// |=n0=|.| |=n=|.| |=n1=|.|
@@ -719,7 +721,7 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 	auto p = static_cast<t_leaf*>((--a_tail)->v_node);
 	size_t i = a_tail->v_index;
 	// if n + m <= N
-	if (p->v_size + a_n <= A_size) {
+	if (p->v_size + a_n <= A_leaf) {
 		// |=     N     =|
 		// |=i=|*|=n-i=|.|
 		p->f_insert(i, a_first, a_n);
@@ -737,7 +739,7 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 		if (j > 0) {
 			auto r = p->v_previous;
 			// if n0 + i < N
-			if (r->v_size + i < A_size) {
+			if (r->v_size + i < A_leaf) {
 				// |=  N   =| ? |=    N    =| ...
 				// |=n0+i=|.| ? |.i.|=n-i=|.| ...
 				// l = {node: n0, index: n0 + i}
@@ -746,7 +748,7 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 				q->v_indices[j - 1] += i;
 				l = {r, r->v_size};
 				// if n0 + i + m <= N
-				if (r->v_size + a_n <= A_size) {
+				if (r->v_size + a_n <= A_leaf) {
 					// |=   N    =| |=  N  =|
 					// |=n0+i=|*|.| |=n-i=|.|
 					std::uninitialized_copy_n(a_first, a_n, r->f_values() + r->v_size);
@@ -761,11 +763,11 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 				// |=n0+i=|*| ? |.i.|=n-i=|.| ...
 				// m' = i' + m' - N
 				// i' = 0
-				size_t n = A_size - r->v_size;
+				size_t n = A_leaf - r->v_size;
 				std::uninitialized_copy_n(a_first, n, r->f_values() + r->v_size);
 				a_first += n;
 				a_n -= n;
-				r->v_size = A_size;
+				r->v_size = A_leaf;
 				q->v_indices[j - 1] += n;
 				f_adjust(a_head, a_tail, n);
 				ii = 0;
@@ -775,16 +777,16 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 				// |=N=| |=     N      =| ...
 				// |=N=| |=i'=|.|=n-i=|.| ...
 				// l.index = i'
-				size_t n = A_size - r->v_size;
+				size_t n = A_leaf - r->v_size;
 				f_move(v, v + n, r->f_values() + r->v_size);
-				r->v_size = A_size;
+				r->v_size = A_leaf;
 				q->v_indices[j - 1] += n;
 				ii = l.v_index -= n;
 				f_unshift(v, v + ii, n);
 			}
 		}
 		// if i' + m' + n - i <= N
-		if (ii + a_n + ni <= A_size) {
+		if (ii + a_n + ni <= A_leaf) {
 			// |=     N      =|
 			// |=i'=|*|=n-i=|.|
 			p->f_slide(i, ii + a_n);
@@ -797,18 +799,18 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 	// m + n > N && n0 >= N / 2
 	// m' + n - i (= n0 + m + n - N) > N / 2
 	// if l.node == n && i' + m' + n - i > N * 2
-	if (l.v_node == p && ii + a_n + ni > A_size * 2) {
+	if (l.v_node == p && ii + a_n + ni > A_leaf * 2) {
 		// |= N  =| ? |=    N    =| ...
 		// |=i'=|*| ? |.i.|=n-i=|.| ...
 		// m' = i' + m' - N
 		// l.node = ?
 		// i' = 0
-		auto r = new t_leaf(A_size, p);
-		size_t n = A_size - ii;
+		auto r = new t_leaf(A_leaf, p);
+		size_t n = A_leaf - ii;
 		std::uninitialized_copy_n(a_first, n, f_move(v, v + ii, r->f_values()));
 		a_first += n;
 		a_n -= n;
-		a_tail = f_insert_branch(a_head, a_tail, A_size, n, r, false, true);
+		a_tail = f_insert_branch(a_head, a_tail, A_leaf, n, r, false, true);
 		l.v_node = r;
 		ii = 0;
 		// m' + n - i > N
@@ -819,12 +821,12 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 	//     |***| ? |.i.|=n-i=|.| ...
 	//     m' = m' - N
 	//   N < m' + n - i <= N * 2
-	if (l.v_node != p) while (a_n + ni > A_size * 2) {
-		auto r = new t_leaf(A_size, p);
-		std::uninitialized_copy_n(a_first, A_size, r->f_values());
-		a_first += A_size;
-		a_n -= A_size;
-		a_tail = f_insert_branch(a_head, a_tail, A_size, A_size, r, false, true);
+	if (l.v_node != p) while (a_n + ni > A_leaf * 2) {
+		auto r = new t_leaf(A_leaf, p);
+		std::uninitialized_copy_n(a_first, A_leaf, r->f_values());
+		a_first += A_leaf;
+		a_n -= A_leaf;
+		a_tail = f_insert_branch(a_head, a_tail, A_leaf, A_leaf, r, false, true);
 	}
 	// N < i' + m' + n - i <= N * 2
 	size_t k = ii + a_n + ni;
@@ -834,11 +836,11 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 		size_t j = a_tail[-1].v_index;
 		if (j < q->v_size) {
 			auto r = p->v_next;
-			if (k + r->v_size <= A_size * 2) {
+			if (k + r->v_size <= A_leaf * 2) {
 				auto w = r->f_values();
-				size_t d = k - A_size;
+				size_t d = k - A_leaf;
 				f_shift(w, w + r->v_size, d);
-				if (ii + a_n <= A_size) {
+				if (ii + a_n <= A_leaf) {
 					// |=  N   =| |=  N   =|
 					// |=i'=|*|=n-i=|=n1=|.|
 					f_move(v + p->v_size - d, v + p->v_size, w);
@@ -847,12 +849,12 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 				} else {
 					// |= N  =| |=     N      =|
 					// |=i'=|*****|=n-i=|=n1=|.|
-					size_t e = A_size - ii;
+					size_t e = A_leaf - ii;
 					f_move(v + i, v + p->v_size, w + a_n - e);
 					std::uninitialized_copy_n(a_first, e, v + ii);
 					std::uninitialized_copy_n(a_first + e, a_n - e, w);
 				}
-				p->v_size = A_size;
+				p->v_size = A_leaf;
 				r->v_size += d;
 				q->v_indices[j] -= d;
 				f_adjust(a_head, a_tail, a_n);
@@ -894,8 +896,8 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_insert
 	return l;
 }
 
-template<typename T_value, size_t A_size>
-typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_insert_branch(t_location* a_head, t_location* a_tail, size_t a_index, size_t a_delta, void* a_node, bool a_put_right, bool a_get_right)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+typename t_array<T_value, A_leaf, A_branch>::t_location* t_array<T_value, A_leaf, A_branch>::f_insert_branch(t_location* a_head, t_location* a_tail, size_t a_index, size_t a_delta, void* a_node, bool a_put_right, bool a_get_right)
 {
 	if (a_head == a_tail) {
 		v_root = a_put_right ? new t_branch(v_root, a_index, a_node) : new t_branch(a_node, a_index, v_root);
@@ -906,13 +908,13 @@ typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_inser
 	auto p = static_cast<t_branch*>((--a_tail)->v_node);
 	size_t i = a_tail->v_index;
 	if (i > 0) a_index += p->v_indices[i - 1];
-	if (p->v_size < A_size) {
+	if (p->v_size < A_branch) {
 		p->f_insert(i, a_index, a_delta, a_node, a_put_right);
 		f_adjust(a_head, a_tail, a_delta);
 		if (a_get_right) ++i;
 		*a_tail = {p, i};
-	} else if (i < (A_size + 1) / 2) {
-		size_t index = p->v_indices[(A_size + 1) / 2 - 1];
+	} else if (i < (A_branch + 1) / 2) {
+		size_t index = p->v_indices[(A_branch + 1) / 2 - 1];
 		//      p
 		//  i i I i i
 		// x X x x x x
@@ -923,8 +925,8 @@ typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_inser
 		a_tail = f_insert_branch(a_head, a_tail, index + a_delta, a_delta, q, true, false);
 		if (a_get_right) ++i;
 		*a_tail = {p, i};
-	} else if (i > (A_size + 1) / 2) {
-		size_t index = p->v_indices[(A_size + 1) / 2];
+	} else if (i > (A_branch + 1) / 2) {
+		size_t index = p->v_indices[(A_branch + 1) / 2];
 		//      p
 		//  i i i i I
 		// x x x x X x
@@ -934,7 +936,7 @@ typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_inser
 		// x x x x X X x
 		a_tail = f_insert_branch(a_head, a_tail, index, a_delta, q, true, true);
 		if (a_get_right) ++i;
-		*a_tail = {q, i - (A_size + 1) / 2 - 1};
+		*a_tail = {q, i - (A_branch + 1) / 2 - 1};
 	} else {
 		//      p
 		//  i i i I i
@@ -944,13 +946,13 @@ typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_inser
 		//  i i i   i i
 		// x x x X X x x
 		a_tail = f_insert_branch(a_head, a_tail, a_index, a_delta, q, true, a_get_right);
-		*a_tail = a_get_right ? t_location{q, 0} : t_location{p, (A_size + 1) / 2};
+		*a_tail = a_get_right ? t_location{q, 0} : t_location{p, (A_branch + 1) / 2};
 	}
 	return ++a_tail;
 }
 
-template<typename T_value, size_t A_size>
-typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_erase_leaf(t_location* a_head, t_location* a_tail, size_t a_n)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+typename t_array<T_value, A_leaf, A_branch>::t_location t_array<T_value, A_leaf, A_branch>::f_erase_leaf(t_location* a_head, t_location* a_tail, size_t a_n)
 {
 	auto p = static_cast<t_leaf*>((--a_tail)->v_node);
 	size_t i = a_tail->v_index;
@@ -964,7 +966,7 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_erase_
 			--v_depth;
 		}
 		return {&v_link, 0};
-	} else if (p->v_size - a_n >= A_size / 2) {
+	} else if (p->v_size - a_n >= A_leaf / 2) {
 		p->f_erase(i, a_n);
 		f_adjust(a_head, a_tail, -a_n);
 		return i < p->v_size ? t_location{p, i} : t_location{p->v_next, 0};
@@ -973,13 +975,13 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_erase_
 	size_t j = a_tail[-1].v_index;
 	if (j > 0) {
 		auto r = p->v_previous;
-		size_t n = A_size / 2 + a_n - p->v_size;
-		if (r->v_size - n >= A_size / 2) {
+		size_t n = A_leaf / 2 + a_n - p->v_size;
+		if (r->v_size - n >= A_leaf / 2) {
 			r->f_erase(p, n, i, a_n);
 			q->v_indices[j - 1] -= n;
 			f_adjust(a_head, a_tail, -a_n);
 			i += n;
-			return i < A_size / 2 ? t_location{p, i} : t_location{p->v_next, 0};
+			return i < A_leaf / 2 ? t_location{p, i} : t_location{p->v_next, 0};
 		} else if (j >= q->v_size) {
 			a_tail[-1].v_index = --j;
 			n = r->v_size;
@@ -991,8 +993,8 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_erase_
 		}
 	}
 	auto r = p->v_next;
-	size_t n = A_size / 2 + a_n - p->v_size;
-	if (r->v_size - n >= A_size / 2) {
+	size_t n = A_leaf / 2 + a_n - p->v_size;
+	if (r->v_size - n >= A_leaf / 2) {
 		p->f_erase(i, a_n, n, r);
 		q->v_indices[j] += n;
 		f_adjust(a_head, a_tail, -a_n);
@@ -1004,23 +1006,23 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_erase_
 	return {p, i};
 }
 
-template<typename T_value, size_t A_size>
-typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_merge_leaf(t_location* a_head, t_location* a_tail, t_leaf* a_p, size_t a_i)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+typename t_array<T_value, A_leaf, A_branch>::t_location t_array<T_value, A_leaf, A_branch>::f_merge_leaf(t_location* a_head, t_location* a_tail, t_leaf* a_p, size_t a_i)
 {
-	size_t n = A_size / 2 - a_p->v_size;
+	size_t n = A_leaf / 2 - a_p->v_size;
 	auto v = a_p->f_values();
 	auto q = static_cast<t_branch*>(a_tail[-1].v_node);
 	size_t j = a_tail[-1].v_index;
 	if (j > 0) {
 		auto r = a_p->v_previous;
-		if (r->v_size - n >= A_size / 2) {
+		if (r->v_size - n >= A_leaf / 2) {
 			r->v_size -= n;
-			a_p->v_size = A_size / 2;
+			a_p->v_size = A_leaf / 2;
 			auto w = r->f_values() + r->v_size;
 			f_move(w, w + n, f_shift(v, v + a_p->v_size, n));
 			q->v_indices[j - 1] -= n;
 			a_i += n;
-			return a_i < A_size / 2 ? t_location{a_p, a_i} : t_location{a_p->v_next, 0};
+			return a_i < A_leaf / 2 ? t_location{a_p, a_i} : t_location{a_p->v_next, 0};
 		} else if (j >= q->v_size) {
 			a_tail[-1].v_index = --j;
 			a_i += r->v_size;
@@ -1033,9 +1035,9 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_merge_
 	}
 	auto r = a_p->v_next;
 	auto w = r->f_values();
-	if (r->v_size - n >= A_size / 2) {
+	if (r->v_size - n >= A_leaf / 2) {
 		f_move(w, w + n, v + a_p->v_size);
-		a_p->v_size = A_size / 2;
+		a_p->v_size = A_leaf / 2;
 		r->v_size -= n;
 		f_unshift(w, w + r->v_size, n);
 		q->v_indices[j] += n;
@@ -1048,8 +1050,8 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_merge_
 	return {a_p, a_i};
 }
 
-template<typename T_value, size_t A_size>
-typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_merge_leaf(t_location* a_head, t_location* a_tail, t_leaf* a_p, size_t a_i, t_leaf* a_q, size_t a_j)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+typename t_array<T_value, A_leaf, A_branch>::t_location t_array<T_value, A_leaf, A_branch>::f_merge_leaf(t_location* a_head, t_location* a_tail, t_leaf* a_p, size_t a_i, t_leaf* a_q, size_t a_j)
 {
 	auto v = a_p->f_values() + a_i;
 	size_t a = a_p->v_size - a_i;
@@ -1061,20 +1063,20 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_merge_
 	size_t j = a_tail->v_index - 1;
 	q->v_indices[j] -= a;
 	size_t m = a_i + b;
-	if (m >= A_size / 2 * 2) {
+	if (m >= A_leaf / 2 * 2) {
 		f_adjust(a_head, a_tail + 1, -(a + a_j));
-		if (a_i < A_size / 2) {
-			a_p->v_size = A_size / 2;
-			a_q->v_size = m - A_size / 2;
-			size_t d = A_size / 2 - a_i;
+		if (a_i < A_leaf / 2) {
+			a_p->v_size = A_leaf / 2;
+			a_q->v_size = m - A_leaf / 2;
+			size_t d = A_leaf / 2 - a_i;
 			f_move(w + a_j, w + a_j + d, v);
 			f_unshift(w, w + a_q->v_size, a_j + d);
 			q->v_indices[j] += d;
 			return {a_p, a_i};
-		} else if (b < A_size / 2) {
-			a_p->v_size = m - A_size / 2;
-			a_q->v_size = A_size / 2;
-			size_t d = A_size / 2 - b;
+		} else if (b < A_leaf / 2) {
+			a_p->v_size = m - A_leaf / 2;
+			a_q->v_size = A_leaf / 2;
+			size_t d = A_leaf / 2 - b;
 			f_unshift(f_move(a_p->f_values() + a_p->v_size, v, w), w + a_q->v_size, a_j - d);
 			q->v_indices[j] -= d;
 			return b > 0 ? t_location{a_q, d} : t_location{a_q->v_next, 0};
@@ -1090,12 +1092,12 @@ typename t_array<T_value, A_size>::t_location t_array<T_value, A_size>::f_merge_
 	a_tail->v_index = j;
 	a_q->f_unlink();
 	a_tail = f_erase_branch(a_head, a_tail + 1, a + a_j);
-	if (a_tail == a_head || m >= A_size / 2) return b > 0 ? t_location{a_p, a_i} : t_location{a_p->v_next, 0};
+	if (a_tail == a_head || m >= A_leaf / 2) return b > 0 ? t_location{a_p, a_i} : t_location{a_p->v_next, 0};
 	return f_merge_leaf(a_head, a_tail, a_p, a_i);
 }
 
-template<typename T_value, size_t A_size>
-typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_erase_branch(t_location* a_head, t_location* a_tail, size_t a_delta)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+typename t_array<T_value, A_leaf, A_branch>::t_location* t_array<T_value, A_leaf, A_branch>::f_erase_branch(t_location* a_head, t_location* a_tail, size_t a_delta)
 {
 	auto p = static_cast<t_branch*>((--a_tail)->v_node);
 	size_t i = a_tail->v_index;
@@ -1109,7 +1111,7 @@ typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_erase
 			--v_depth;
 		}
 		return a_tail;
-	} else if (p->v_size > A_size / 2) {
+	} else if (p->v_size > A_branch / 2) {
 		p->f_erase(i, a_delta);
 		f_adjust(a_head, a_tail, -a_delta);
 		*a_tail = {p, i};
@@ -1119,7 +1121,7 @@ typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_erase
 	size_t j = a_tail[-1].v_index;
 	if (j > 0) {
 		auto r = static_cast<t_branch*>(q->v_nodes[j - 1]);
-		if (r->v_size > A_size / 2) {
+		if (r->v_size > A_branch / 2) {
 			size_t base = j > 1 ? q->v_indices[j - 2] : 0;
 			r->f_erase(base, q->v_indices[j - 1], p, i, a_delta);
 			f_adjust(a_head, a_tail, -a_delta);
@@ -1130,13 +1132,13 @@ typename t_array<T_value, A_size>::t_location* t_array<T_value, A_size>::f_erase
 			r->f_merge(j > 0 ? q->v_indices[j - 1] : 0, q->v_indices[j], p, i, a_delta);
 			delete p;
 			a_tail = f_erase_branch(a_head, a_tail, a_delta);
-			*a_tail = {r, i + A_size / 2 + 1};
+			*a_tail = {r, i + A_branch / 2 + 1};
 			return ++a_tail;
 		}
 	}
 	auto r = static_cast<t_branch*>(q->v_nodes[j + 1]);
 	size_t base = j > 0 ? q->v_indices[j - 1] : 0;
-	if (r->v_size > A_size / 2) {
+	if (r->v_size > A_branch / 2) {
 		p->f_erase(i, a_delta, base, q->v_indices[j], r);
 		f_adjust(a_head, a_tail, -a_delta);
 	} else {

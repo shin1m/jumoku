@@ -1,7 +1,7 @@
 #include "test_array.h"
 
-template<typename T_value, size_t A_size, typename T_iterator>
-void f_test_insert_range(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T_iterator>
+void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
 {
 	auto i = a0.f_insert(a0.f_at(a_i), a_first, a_last);
 	assert(std::equal(a_first, a_last, i));
@@ -9,14 +9,14 @@ void f_test_insert_range(xtree::t_array<T_value, A_size>& a0, std::vector<T_valu
 	f_assert_equals(a0, a1);
 }
 
-template<typename T_value, size_t A_size, typename T>
-void f_test_insert_range(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T>
+void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
 {
 	f_test_insert_range(a0, a1, a_i, a_values.begin(), a_values.end());
 }
 
-template<typename T_value, size_t A_size>
-void f_test_insert_range(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1, size_t a_i, std::initializer_list<T_value> a_values)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, std::initializer_list<T_value> a_values)
 {
 	f_test_insert_range(a0, a1, a_i, a_values.begin(), a_values.end());
 }
@@ -24,7 +24,7 @@ void f_test_insert_range(xtree::t_array<T_value, A_size>& a0, std::vector<T_valu
 int main(int argc, char* argv[])
 {
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert_range(array, vector, 0, f_range(0, 2));
 		f_test_insert_range(array, vector, 2, f_range(2, 3));
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 8));
 		f_test_erase(array, vector, 0, 1);
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 8));
 		f_test_erase(array, vector, 0, 1);
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 7));
 		f_test_erase(array, vector, 0, 1);
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 6));
 		f_test_erase(array, vector, 0, 1);
@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 7));
 		f_test_erase(array, vector, 0, 1);
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 8));
 		f_test_erase(array, vector, 0, 1);
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 6));
 		f_assert_equals(array, {0, 1, 2, 3, 4, 5});
@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 10));
 		f_test_erase(array, vector, 0, 1);
@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 5));
 		f_test_insert(array, vector, 0, {5, 6});
@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 11));
 		f_test_erase(array, vector, 0, 1);
@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 5));
 		f_test_insert(array, vector, 0, {5, 6});
@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 11));
 		f_test_erase(array, vector, 0, 1);
@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 5));
 		f_assert_equals(array, {0, 1, 2, 3, 4});
@@ -268,7 +268,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 10));
 		f_assert_equals(array, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 4));
 		f_assert_equals(array, {0, 1, 2, 3});
@@ -300,7 +300,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 7));
 		f_assert_equals(array, {0, 1, 2, 3, 4, 5, 6});
@@ -317,7 +317,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 4));
 		f_assert_equals(array, {0, 1, 2, 3});
@@ -332,7 +332,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 5));
 		f_assert_equals(array, {0, 1, 2, 3, 4});
@@ -347,7 +347,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 20));
 		f_test_erase(array, vector, 0, 1);
@@ -367,7 +367,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 20));
 		assert(f_dump(array) == R"(
@@ -386,7 +386,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 5));
 		assert(f_dump(array) == R"(
@@ -400,7 +400,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 5));
 		assert(f_dump(array) == R"(
@@ -415,7 +415,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert_range(array, vector, 0, f_range(0, 6));
 		f_assert_equals(array, {0, 1, 2, 3, 4, 5});
@@ -424,7 +424,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert_range(array, vector, 0, f_range(0, 30));
 		assert(f_dump(array) == R"(
@@ -446,7 +446,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert_range(array, vector, 0, f_range(0, 1000));
 	}

@@ -4,8 +4,8 @@
 
 #include "array.h"
 
-template<typename T_value, size_t A_size>
-std::string f_dump(const xtree::t_array<T_value, A_size>& a_array)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+std::string f_dump(const xtree::t_array<T_value, A_leaf, A_branch>& a_array)
 {
 	std::string s = R"(
 )";
@@ -17,8 +17,8 @@ std::string f_dump(const xtree::t_array<T_value, A_size>& a_array)
 	return s;
 }
 
-template<typename T_value, size_t A_size, typename T>
-void f_assert_equals(const xtree::t_array<T_value, A_size>& a0, const T& a1)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T>
+void f_assert_equals(const xtree::t_array<T_value, A_leaf, A_branch>& a0, const T& a1)
 {
 	assert(a0.f_size() == a1.size());
 	assert(std::equal(a0.f_begin(), a0.f_end(), a1.begin(), a1.end()));
@@ -26,10 +26,10 @@ void f_assert_equals(const xtree::t_array<T_value, A_size>& a0, const T& a1)
 	for (size_t j = 0; j < a0.f_size(); ++j) assert(*a0.f_at(j) == *i++);
 }
 
-template<typename T_value, size_t A_size>
-void f_assert_equals(const xtree::t_array<T_value, A_size>& a0, std::initializer_list<T_value> a1)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+void f_assert_equals(const xtree::t_array<T_value, A_leaf, A_branch>& a0, std::initializer_list<T_value> a1)
 {
-	f_assert_equals<T_value, A_size, std::initializer_list<T_value>>(a0, a1);
+	f_assert_equals<T_value, A_leaf, A_branch, std::initializer_list<T_value>>(a0, a1);
 }
 
 std::vector<int> f_range(int a_i, size_t a_n)
@@ -39,8 +39,8 @@ std::vector<int> f_range(int a_i, size_t a_n)
 	return vector;
 }
 
-template<typename T_value, size_t A_size, typename T_iterator>
-void f_test_insert(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T_iterator>
+void f_test_insert(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
 {
 	a1.insert(a1.begin() + a_i, a_first, a_last);
 	for (auto i = a0.f_at(a_i); a_first != a_last; ++a_first) {
@@ -51,20 +51,20 @@ void f_test_insert(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1
 	f_assert_equals(a0, a1);
 }
 
-template<typename T_value, size_t A_size, typename T>
-void f_test_insert(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T>
+void f_test_insert(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
 {
 	f_test_insert(a0, a1, a_i, a_values.begin(), a_values.end());
 }
 
-template<typename T_value, size_t A_size>
-void f_test_insert(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1, size_t a_i, std::initializer_list<T_value> a_values)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+void f_test_insert(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, std::initializer_list<T_value> a_values)
 {
 	f_test_insert(a0, a1, a_i, a_values.begin(), a_values.end());
 }
 
-template<typename T_value, size_t A_size>
-void f_test_erase(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+void f_test_erase(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
 {
 	a1.erase(a1.begin() + a_i, a1.begin() + a_i + a_n);
 	auto i = a0.f_at(a_i);

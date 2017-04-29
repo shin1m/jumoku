@@ -19,5 +19,5 @@ AM_CXXFLAGS += -pg
 AM_LDFLAGS += -pg
 endif
 AM_DEFAULT_SOURCE_EXT = .cc
-check_PROGRAMS = test_array test_array_insert test_array_erase
+check_PROGRAMS = test_array test_array2 test_array_insert test_array_erase
 TESTS = $(check_PROGRAMS)

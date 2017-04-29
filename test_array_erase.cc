@@ -1,7 +1,7 @@
 #include "test_array.h"
 
-template<typename T_value, size_t A_size>
-void f_test_erase_range(xtree::t_array<T_value, A_size>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
+template<typename T_value, size_t A_leaf, size_t A_branch>
+void f_test_erase_range(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
 {
 	a1.erase(a1.begin() + a_i, a1.begin() + a_i + a_n);
 	auto i = a0.f_erase(a0.f_at(a_i), a0.f_at(a_i + a_n));
@@ -12,7 +12,7 @@ void f_test_erase_range(xtree::t_array<T_value, A_size>& a0, std::vector<T_value
 int main(int argc, char* argv[])
 {
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 3));
 		f_test_erase_range(array, vector, 0, 3);
@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 4));
 		f_test_erase_range(array, vector, 1, 2);
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 4));
 		f_test_erase_range(array, vector, 2, 2);
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 15));
 		assert(f_dump(array) == R"(
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 15));
 		// |=====| |****=| ...
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 15));
 		// |=====| |=****| ...
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 10));
 		f_test_erase(array, vector, 0, 3);
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 10));
 		f_test_erase(array, vector, 0, 2);
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 7));
 		// |**=..| |====.|
@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 15));
 		// |*****| |=====| ...
@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 6));
 		f_test_erase(array, vector, 5, 1);
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 15));
 		f_test_erase(array, vector, 5, 3);
@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 15));
 		// |*****| |*****| |*====|
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 35));
 		//                    x
@@ -224,7 +224,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 31));
 		f_test_erase(array, vector, 27, 1);
@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 35));
 		//                    x
@@ -275,7 +275,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 6));
 		// |==*..| |*==..|
@@ -289,7 +289,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 7));
 		// |=**..| |*===.|
@@ -303,7 +303,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 8));
 		// |***..| |*====|
@@ -317,7 +317,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 9));
 		// |===*.| |****=|
@@ -331,7 +331,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 10));
 		// |====*| |****=|
@@ -345,7 +345,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 6));
 		// |=**..| |*==..|
@@ -358,7 +358,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 20));
 		f_test_erase(array, vector, 8, 4);
@@ -376,7 +376,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 6));
 		// |***..| |**=..|
@@ -389,7 +389,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 6));
 		// |=**..| |***..|
@@ -402,7 +402,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 20));
 		f_test_erase(array, vector, 8, 4);
@@ -420,7 +420,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 20));
 		f_test_erase(array, vector, 8, 4);
@@ -438,7 +438,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 11));
 		f_test_erase(array, vector, 0, 3);
@@ -453,7 +453,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 11));
 		f_test_erase(array, vector, 0, 3);
@@ -468,7 +468,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 20));
 		f_test_erase(array, vector, 3, 4);
@@ -486,7 +486,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<int, 5> array;
+		xtree::t_array<int, 5, 5> array;
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 11));
 		f_test_erase(array, vector, 3, 2);
