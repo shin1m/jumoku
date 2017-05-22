@@ -225,20 +225,30 @@ protected:
 	};
 	struct t_via
 	{
-		void* v_node;
+		t_branch* v_node;
 		size_t v_index;
+	};
+	template<typename T_use>
+	struct t_less
+	{
+		T_use v_use;
+
+		bool operator()(size_t a_x, const t_index& a_y) const
+		{
+			return a_x < v_use(a_y);
+		}
 	};
 	struct t_at
 	{
 		void* v_node;
-		t_index v_index;
+		size_t v_index;
 
-		template<typename T_less>
-		t_via f_step(T_less&& a_less)
+		template<typename T_use>
+		t_via f_step(T_use&& a_use)
 		{
 			auto p = static_cast<t_branch*>(v_node);
-			size_t i = std::upper_bound(p->v_indices, p->v_indices + p->v_size, v_index, std::forward<T_less>(a_less)) - p->v_indices;
-			if (i > 0) v_index -= p->v_indices[i - 1];
+			size_t i = std::upper_bound(p->v_indices, p->v_indices + p->v_size, v_index, t_less<T_use>{a_use}) - p->v_indices;
+			if (i > 0) v_index -= a_use(p->v_indices[i - 1]);
 			v_node = p->v_nodes[i];
 			return {p, i};
 		}
@@ -247,7 +257,7 @@ protected:
 	static void f_adjust(const t_via* a_head, const t_via* a_tail, const t_delta& a_delta)
 	{
 		while (a_head != a_tail) {
-			auto p = static_cast<t_branch*>((--a_tail)->v_node);
+			auto p = (--a_tail)->v_node;
 			for (size_t j = a_tail->v_index; j < p->v_size; ++j) p->v_indices[j] += a_delta;
 		}
 	}
@@ -258,17 +268,17 @@ protected:
 
 	size_t f_depth(size_t a_n) const
 	{
-		size_t depth = v_depth + 1;
+		size_t depth = v_depth;
 		for (; a_n > 0; a_n /= (A_size / 2) + 1) ++depth;
 		return depth;
 	}
 	t_via* f_insert_branch(t_via* a_head, t_via* a_tail, t_index a_index, const t_index& a_delta, void* a_node, bool a_put_right, bool a_get_right);
 	t_via* f_erase_branch(t_via* a_head, t_via* a_tail, const t_index& a_delta);
-	template<typename T_less>
-	t_at f_at(const t_index& a_index, t_via* a_path, T_less&& a_less) const
+	template<typename T_use>
+	t_at f_at(const t_index& a_index, t_via* a_path, T_use&& a_use) const
 	{
-		t_at i{v_root, a_index};
-		for (size_t n = v_depth; --n > 0;) *a_path++ = i.f_step(std::forward<T_less>(a_less));
+		t_at i{v_root, a_use(a_index)};
+		for (size_t n = v_depth; --n > 0;) *a_path++ = i.f_step(std::forward<T_use>(a_use));
 		return i;
 	}
 	void f_dump(size_t a_level, void* a_node, const std::function<void(size_t, const t_index&)>& a_dump) const
@@ -303,10 +313,10 @@ typename t_tree<t_index, A_size>::t_via* t_tree<t_index, A_size>::f_insert_branc
 	if (a_head == a_tail) {
 		v_root = a_put_right ? new t_branch(v_root, a_index, a_node) : new t_branch(a_node, a_index, v_root);
 		++v_depth;
-		*a_tail = {v_root, a_get_right ? 1u : 0u};
+		*a_tail = {static_cast<t_branch*>(v_root), a_get_right ? 1u : 0u};
 		return ++a_tail;
 	}
-	auto p = static_cast<t_branch*>((--a_tail)->v_node);
+	auto p = (--a_tail)->v_node;
 	size_t i = a_tail->v_index;
 	if (i > 0) a_index += p->v_indices[i - 1];
 	if (p->v_size < A_size) {
@@ -355,7 +365,7 @@ typename t_tree<t_index, A_size>::t_via* t_tree<t_index, A_size>::f_insert_branc
 template<typename t_index, size_t A_size>
 typename t_tree<t_index, A_size>::t_via* t_tree<t_index, A_size>::f_erase_branch(t_via* a_head, t_via* a_tail, const t_index& a_delta)
 {
-	auto p = static_cast<t_branch*>((--a_tail)->v_node);
+	auto p = (--a_tail)->v_node;
 	size_t i = a_tail->v_index;
 	if (a_head == a_tail) {
 		if (p->v_size > 1) {
@@ -373,7 +383,7 @@ typename t_tree<t_index, A_size>::t_via* t_tree<t_index, A_size>::f_erase_branch
 		*a_tail = {p, i};
 		return ++a_tail;
 	}
-	auto q = static_cast<t_branch*>(a_tail[-1].v_node);
+	auto q = a_tail[-1].v_node;
 	size_t j = a_tail[-1].v_index;
 	if (j > 0) {
 		auto r = static_cast<t_branch*>(q->v_nodes[j - 1]);
@@ -405,11 +415,6 @@ typename t_tree<t_index, A_size>::t_via* t_tree<t_index, A_size>::f_erase_branch
 	*a_tail = {p, i};
 	return ++a_tail;
 }
-
-template<typename T>
-struct t_traits
-{
-};
 
 }
 
