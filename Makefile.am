@@ -1,7 +1,8 @@
 EXTRA_DIST = \
 	tree.h \
 	array.h \
-	test_array.h
+	test_array.h \
+	test_spans.h
 
 CLEANFILES = *.gcda *.gcno *.gcov
 
@@ -24,5 +25,6 @@ check_PROGRAMS = \
 	test_array2 \
 	test_array_insert \
 	test_array_erase \
-	test_spans
+	test_spans \
+	test_spans_insert
 TESTS = $(check_PROGRAMS)

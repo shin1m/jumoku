@@ -1,26 +1,5 @@
 #include "test_array.h"
 
-template<typename T_value, size_t A_leaf, size_t A_branch, typename T_iterator>
-void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
-{
-	auto i = a0.f_insert(a0.f_at(a_i), a_first, a_last);
-	assert(std::equal(a_first, a_last, i));
-	a1.insert(a1.begin() + a_i, a_first, a_last);
-	f_assert_equals(a0, a1);
-}
-
-template<typename T_value, size_t A_leaf, size_t A_branch, typename T>
-void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
-{
-	f_test_insert_range(a0, a1, a_i, a_values.begin(), a_values.end());
-}
-
-template<typename T_value, size_t A_leaf, size_t A_branch>
-void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, std::initializer_list<T_value> a_values)
-{
-	f_test_insert_range(a0, a1, a_i, a_values.begin(), a_values.end());
-}
-
 int main(int argc, char* argv[])
 {
 	{
