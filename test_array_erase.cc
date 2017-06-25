@@ -1,14 +1,5 @@
 #include "test_array.h"
 
-template<typename T_value, size_t A_leaf, size_t A_branch>
-void f_test_erase_range(xtree::t_array<T_value, A_leaf, A_branch>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
-{
-	a1.erase(a1.begin() + a_i, a1.begin() + a_i + a_n);
-	auto i = a0.f_erase(a0.f_at(a_i), a0.f_at(a_i + a_n));
-	assert(i == a0.f_at(a_i));
-	f_assert_equals(a0, a1);
-}
-
 int main(int argc, char* argv[])
 {
 	{
@@ -92,7 +83,7 @@ int main(int argc, char* argv[])
 		std::vector<int> vector;
 		f_test_insert(array, vector, 0, f_range(0, 10));
 		f_test_erase(array, vector, 0, 3);
-		// |**...| |**===|
+		// |==...| |****=|
 		assert(f_dump(array) == R"(
 2
 )");

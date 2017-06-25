@@ -99,3 +99,12 @@ void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0
 {
 	f_test_insert_range(a0, a1, a_i, a_values.begin(), a_values.end());
 }
+
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
+void f_test_erase_range(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
+{
+	a1.erase(a1.begin() + a_i, a1.begin() + a_i + a_n);
+	auto i = a0.f_erase(a0.f_at(a_i), a0.f_at(a_i + a_n));
+	assert(i == a0.f_at(a_i));
+	f_assert_equals(a0, a1);
+}

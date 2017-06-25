@@ -26,5 +26,6 @@ check_PROGRAMS = \
 	test_array_insert \
 	test_array_erase \
 	test_spans \
-	test_spans_insert
+	test_spans_insert \
+	test_spans_erase
 TESTS = $(check_PROGRAMS)
