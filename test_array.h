@@ -6,7 +6,7 @@
 #include <cassert>
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
-std::string f_dump(const xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a_array)
+std::string f_dump(const jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a_array)
 {
 	std::string s = R"(
 )";
@@ -19,7 +19,7 @@ std::string f_dump(const xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a_
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T>
-void f_assert_equals(const xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, const T& a1)
+void f_assert_equals(const jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, const T& a1)
 {
 	assert(a0.f_size() == std::accumulate(a1.begin(), a1.end(), typename T_traits::t_index{}, [](auto a_x, auto a_y)
 	{
@@ -31,7 +31,7 @@ void f_assert_equals(const xtree::t_array<T_value, A_leaf, A_branch, T_traits>& 
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
-void f_assert_equals(const xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::initializer_list<T_value> a1)
+void f_assert_equals(const jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::initializer_list<T_value> a1)
 {
 	f_assert_equals<T_value, A_leaf, A_branch, T_traits, std::initializer_list<T_value>>(a0, a1);
 }
@@ -44,7 +44,7 @@ std::vector<int> f_range(int a_i, size_t a_n)
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T_iterator>
-void f_test_insert(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
+void f_test_insert(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
 {
 	a1.insert(a1.begin() + a_i, a_first, a_last);
 	for (auto i = a0.f_at(a_i); a_first != a_last; ++a_first) {
@@ -56,19 +56,19 @@ void f_test_insert(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std:
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T>
-void f_test_insert(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
+void f_test_insert(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
 {
 	f_test_insert(a0, a1, a_i, a_values.begin(), a_values.end());
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
-void f_test_insert(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, std::initializer_list<T_value> a_values)
+void f_test_insert(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, std::initializer_list<T_value> a_values)
 {
 	f_test_insert(a0, a1, a_i, a_values.begin(), a_values.end());
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
-void f_test_erase(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
+void f_test_erase(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
 {
 	a1.erase(a1.begin() + a_i, a1.begin() + a_i + a_n);
 	auto i = a0.f_at(a_i);
@@ -80,7 +80,7 @@ void f_test_erase(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T_iterator>
-void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
+void f_test_insert_range(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
 {
 	auto i = a0.f_insert(a0.f_at(a_i), a_first, a_last);
 	assert(std::equal(a_first, a_last, i));
@@ -89,19 +89,19 @@ void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T>
-void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
+void f_test_insert_range(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
 {
 	f_test_insert_range(a0, a1, a_i, a_values.begin(), a_values.end());
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
-void f_test_insert_range(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, std::initializer_list<T_value> a_values)
+void f_test_insert_range(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, std::initializer_list<T_value> a_values)
 {
 	f_test_insert_range(a0, a1, a_i, a_values.begin(), a_values.end());
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
-void f_test_erase_range(xtree::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
+void f_test_erase_range(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, size_t a_n)
 {
 	a1.erase(a1.begin() + a_i, a1.begin() + a_i + a_n);
 	auto i = a0.f_erase(a0.f_at(a_i), a0.f_at(a_i + a_n));

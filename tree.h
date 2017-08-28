@@ -1,10 +1,10 @@
-#ifndef XTREE__TREE_H
-#define XTREE__TREE_H
+#ifndef JUMOKU__TREE_H
+#define JUMOKU__TREE_H
 
 #include <algorithm>
 #include <functional>
 
-namespace xtree
+namespace jumoku
 {
 
 template<typename T, typename U>
@@ -228,26 +228,19 @@ protected:
 		t_branch* v_node;
 		size_t v_index;
 	};
-	template<typename T_use>
-	struct t_less
-	{
-		T_use v_use;
-
-		bool operator()(size_t a_x, const t_index& a_y) const
-		{
-			return a_x < v_use(a_y);
-		}
-	};
 	struct t_at
 	{
 		void* v_node;
 		size_t v_index;
 
 		template<typename T_use>
-		t_via f_step(T_use&& a_use)
+		t_via f_step(T_use a_use)
 		{
 			auto p = static_cast<t_branch*>(v_node);
-			size_t i = std::upper_bound(p->v_indices, p->v_indices + p->v_size, v_index, t_less<T_use>{a_use}) - p->v_indices;
+			size_t i = std::upper_bound(p->v_indices, p->v_indices + p->v_size, v_index, [&a_use](size_t a_x, const t_index& a_y)
+			{
+				return a_x < a_use(a_y);
+			}) - p->v_indices;
 			if (i > 0) v_index -= a_use(p->v_indices[i - 1]);
 			v_node = p->v_nodes[i];
 			return {p, i};
@@ -275,7 +268,7 @@ protected:
 	t_via* f_insert_branch(t_via* a_head, t_via* a_tail, t_index a_index, const t_index& a_delta, void* a_node, bool a_put_right, bool a_get_right);
 	t_via* f_erase_branch(t_via* a_head, t_via* a_tail, const t_index& a_delta);
 	template<typename T_use>
-	t_at f_at(const t_index& a_index, t_via* a_path, T_use&& a_use) const
+	t_at f_at(const t_index& a_index, t_via* a_path, T_use a_use) const
 	{
 		t_at i{v_root, a_use(a_index)};
 		for (size_t n = v_depth; --n > 0;) *a_path++ = i.f_step(std::forward<T_use>(a_use));

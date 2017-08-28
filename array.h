@@ -1,22 +1,25 @@
-#ifndef XTREE__ARRAY_H
-#define XTREE__ARRAY_H
+#ifndef JUMOKU__ARRAY_H
+#define JUMOKU__ARRAY_H
 
 #include "tree.h"
 
 #include <memory>
 
-namespace xtree
+namespace jumoku
 {
 
 struct t_traits
 {
 	typedef size_t t_index;
 	typedef int t_delta;
-
-	static constexpr size_t f_default(size_t a_index)
+	struct t_default
 	{
-		return a_index;
-	}
+		constexpr size_t operator()(size_t a_index) const
+		{
+			return a_index;
+		}
+	};
+
 	template<typename T>
 	static constexpr size_t f_index(size_t a_n, T)
 	{
@@ -333,6 +336,10 @@ public:
 		{
 			return v_p;
 		}
+		const t_index& f_index() const
+		{
+			return v_index;
+		}
 		t_index f_delta() const
 		{
 			return T_traits::f_delta(v_leaf->f_values(), v_p);
@@ -411,7 +418,7 @@ public:
 		this->v_size += T_traits::f_index(1, a_value);
 		if (this->v_root) {
 			t_via path[this->v_depth];
-			auto at = f_at(a_i.v_index, path, T_traits::f_default);
+			auto at = f_at(a_i.v_index, path, typename T_traits::t_default());
 			return {f_insert_leaf(path, path + this->v_depth - 1, at, std::forward<T>(a_value)), a_i.v_index};
 		}
 		auto p = new t_leaf(static_cast<t_leaf*>(&v_link), 1);
@@ -427,7 +434,7 @@ public:
 		if (n <= 0) return {{a_i.v_leaf, size_t(a_i.v_p - a_i.v_leaf->f_values())}, a_i.v_index};
 		if (this->v_root) {
 			t_via path[this->f_depth(n / (A_leaf / 2))];
-			auto at = f_at(a_i.v_index, path, T_traits::f_default);
+			auto at = f_at(a_i.v_index, path, typename T_traits::t_default());
 			return {f_insert_leaf(path, path + this->v_depth - 1, at, a_first, n), a_i.v_index};
 		}
 		size_t m = std::min(n, A_leaf);
@@ -444,13 +451,14 @@ public:
 	t_mutable_iterator f_erase(t_constant_iterator a_i)
 	{
 		t_via path[this->v_depth - 1];
-		auto at = f_at(a_i.v_index, path, T_traits::f_default);
+		auto at = f_at(a_i.v_index, path, typename T_traits::t_default());
 		return {f_erase_leaf(path, path + this->v_depth - 1, at, 1), a_i.v_index};
 	}
 	t_mutable_iterator f_erase(t_constant_iterator a_first, t_constant_iterator a_last)
 	{
-		size_t n = T_traits::f_default(a_last.v_index) - T_traits::f_default(a_first.v_index);
-		if (n >= T_traits::f_default(this->v_size)) {
+		typename T_traits::t_default use;
+		size_t n = use(a_last.v_index) - use(a_first.v_index);
+		if (n >= use(this->v_size)) {
 			f_clear();
 			return f_begin();
 		}
@@ -459,15 +467,15 @@ public:
 		size_t i = a_first.v_p - a_first.v_leaf->f_values();
 		if (i + n > a_first.v_leaf->v_size) {
 			n = a_first.v_leaf->v_size - i;
-			size_t index = T_traits::f_default(a_first.v_index) + n;
-			at = f_at(T_traits::f_index(index, T_value{}), path, T_traits::f_default);
+			size_t index = use(a_first.v_index) + n;
+			at = f_at(T_traits::f_index(index, T_value{}), path, use);
 			auto tail = path + this->v_depth - 2;
 			size_t j = a_last.v_p - a_last.v_leaf->f_values();
 			if (j <= 0) {
 				a_last.v_leaf = a_last.v_leaf->v_previous;
 				j = a_last.v_leaf->v_size;
 			}
-			for (size_t last = T_traits::f_default(a_last.v_index) - j; index < last;) {
+			for (size_t last = use(a_last.v_index) - j; index < last;) {
 				auto p = static_cast<t_leaf*>(at.v_node);
 				auto delta = T_traits::f_index(p->v_size, p->f_values()[p->v_size - 1]);
 				if (tail->v_index > 0) {
@@ -502,21 +510,47 @@ public:
 			}
 			at = {a_first.v_leaf, i};
 		} else {
-			at = f_at(a_first.v_index, path, T_traits::f_default);
+			at = f_at(a_first.v_index, path, use);
 		}
 		return {f_erase_leaf(path, path + this->v_depth - 1, at, n), a_first.v_index};
 	}
-	t_mutable_iterator f_at(size_t a_index)
+private:
+	static void f_finalize(typename T_traits::t_default&, t_at&)
 	{
-		if (a_index >= T_traits::f_default(this->v_size)) return f_end();
+	}
+	template<typename T_use>
+	static void f_finalize(T_use& a_use, t_at& i)
+	{
+		auto p = static_cast<t_leaf*>(i.v_node);
+		auto q = p->f_values();
+		i.v_index = std::upper_bound(q, q + p->v_size, i.v_index, [&a_use](size_t a_x, const T_value& a_y)
+		{
+			return a_x < a_use(T_traits::f_index(1, a_y));
+		}) - q;
+	}
+public:
+	template<typename T_use>
+	t_mutable_iterator f_at(size_t a_index, T_use a_use)
+	{
+		if (a_index >= a_use(this->v_size)) return f_end();
 		t_at i{this->v_root, a_index};
 		t_index index{};
 		for (size_t n = this->v_depth; --n > 0;) {
-			auto p = i.f_step(T_traits::f_default);
+			auto p = i.f_step(a_use);
 			if (p.v_index > 0) index += p.v_node->v_indices[p.v_index - 1];
 		}
+		f_finalize(a_use, i);
 		if (i.v_index > 0) index += T_traits::f_index(i.v_index, static_cast<t_leaf*>(i.v_node)->f_values()[i.v_index - 1]);
 		return {i, index};
+	}
+	template<typename T_use>
+	t_constant_iterator f_at(size_t a_index, T_use a_use) const
+	{
+		return const_cast<t_array*>(this)->f_at(a_index, std::forward<T_use>(a_use));
+	}
+	t_mutable_iterator f_at(size_t a_index)
+	{
+		return f_at(a_index, typename T_traits::t_default());
 	}
 	t_constant_iterator f_at(size_t a_index) const
 	{

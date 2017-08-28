@@ -3,7 +3,7 @@
 int main(int argc, char* argv[])
 {
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		assert(array.f_empty());
 		f_assert_equals(array, {});
@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 5));
 		f_test_insert(array, vector, 1, f_spans(5, 1));
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 5));
 		f_test_insert(array, vector, 4, f_spans(5, 1));
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 5));
 		// xxxxx
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 8));
 		// xxx xxxxx
@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 30));
 		//  i i i i i
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 30));
 		//  i i i i i
@@ -195,7 +195,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 30));
 		//  i i i i i
@@ -221,7 +221,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 1));
 		f_test_erase(array, vector, 0, 1);
@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 2));
 		f_test_erase(array, vector, 1, 1);
@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 6));
 		// xxx xxx
@@ -280,7 +280,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 6));
 		// xxx xxx
@@ -321,7 +321,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 15));
 		// xxxxx xxxxx xxxxx
@@ -372,7 +372,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 40));
 		//        i
@@ -421,7 +421,7 @@ int main(int argc, char* argv[])
 )");
 	}
 	{
-		xtree::t_array<t_span, 5, 5, t_traits> array;
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 35));
 		//        i
