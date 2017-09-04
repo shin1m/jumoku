@@ -11,91 +11,55 @@ struct t_span
 	}
 };
 
+template<typename T>
+struct t_index
+{
+	T v_i0;
+	T v_i1;
+
+	template<typename U>
+	operator t_index<U>() const
+	{
+		return {U(v_i0), U(v_i1)};
+	}
+	t_index<int> operator-() const
+	{
+		return {-int(v_i0), -int(v_i1)};
+	}
+	bool operator==(const t_index& a_x) const
+	{
+		return v_i0 == a_x.v_i0 && v_i1 == a_x.v_i1;
+	}
+	template<typename U>
+	t_index& operator+=(const t_index<U>& a_x)
+	{
+		v_i0 += a_x.v_i0;
+		v_i1 += a_x.v_i1;
+		return *this;
+	}
+	template<typename U>
+	t_index& operator-=(const t_index<U>& a_x)
+	{
+		v_i0 -= a_x.v_i0;
+		v_i1 -= a_x.v_i1;
+		return *this;
+	}
+	template<typename U>
+	t_index operator+(const t_index<U>& a_x) const
+	{
+		return {v_i0 + T(a_x.v_i0), v_i1 + T(a_x.v_i1)};
+	}
+	template<typename U>
+	t_index operator-(const t_index<U>& a_x) const
+	{
+		return {v_i0 - T(a_x.v_i0), v_i1 - T(a_x.v_i1)};
+	}
+};
+
 struct t_traits
 {
-	struct t_index;
-	struct t_delta
-	{
-		int v_i0;
-		int v_i1;
-
-		operator t_index() const
-		{
-			return {size_t(v_i0), size_t(v_i1)};
-		}
-		t_delta operator-() const
-		{
-			return {-v_i0, -v_i1};
-		}
-		t_delta& operator+=(const t_delta& a_x)
-		{
-			v_i0 += a_x.v_i0;
-			v_i1 += a_x.v_i1;
-			return *this;
-		}
-		t_delta& operator-=(const t_index& a_x)
-		{
-			v_i0 -= a_x.v_i0;
-			v_i1 -= a_x.v_i1;
-			return *this;
-		}
-		t_delta operator+(const t_delta& a_x) const
-		{
-			return {v_i0 + a_x.v_i0, v_i1 + a_x.v_i1};
-		}
-		t_delta operator-(const t_delta& a_x) const
-		{
-			return {v_i0 - a_x.v_i0, v_i1 - a_x.v_i1};
-		}
-	};
-	struct t_index
-	{
-		size_t v_i0;
-		size_t v_i1;
-
-		operator t_delta() const
-		{
-			return {int(v_i0), int(v_i1)};
-		}
-		t_delta operator-() const
-		{
-			return {-int(v_i0), -int(v_i1)};
-		}
-		bool operator==(const t_index& a_x) const
-		{
-			return v_i0 == a_x.v_i0 && v_i1 == a_x.v_i1;
-		}
-		t_index& operator+=(const t_index& a_x)
-		{
-			v_i0 += a_x.v_i0;
-			v_i1 += a_x.v_i1;
-			return *this;
-		}
-		t_index& operator+=(const t_delta& a_x)
-		{
-			v_i0 += a_x.v_i0;
-			v_i1 += a_x.v_i1;
-			return *this;
-		}
-		t_index& operator-=(const t_index& a_x)
-		{
-			v_i0 -= a_x.v_i0;
-			v_i1 -= a_x.v_i1;
-			return *this;
-		}
-		t_index operator+(const t_index& a_x) const
-		{
-			return {v_i0 + a_x.v_i0, v_i1 + a_x.v_i1};
-		}
-		t_index operator+(const t_delta& a_x) const
-		{
-			return {v_i0 + a_x.v_i0, v_i1 + a_x.v_i1};
-		}
-		t_index operator-(const t_delta& a_x) const
-		{
-			return {v_i0 - a_x.v_i0, v_i1 - a_x.v_i1};
-		}
-	};
+	typedef ::t_index<size_t> t_index;
+	typedef ::t_index<int> t_delta;
 	struct t_default
 	{
 		constexpr size_t operator()(const t_index& a_index) const
