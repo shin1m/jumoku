@@ -363,7 +363,7 @@ public:
 		{
 			if (v_p == v_leaf->f_values()) {
 				v_leaf = v_leaf->v_previous;
-				v_p = v_leaf->v_values() + v_leaf->v_size;
+				v_p = v_leaf->f_values() + v_leaf->v_size;
 			}
 			--v_p;
 			v_index -= f_delta();
