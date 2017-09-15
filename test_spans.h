@@ -79,19 +79,14 @@ struct t_traits
 		a_value.v_n += a_index.v_i1;
 	}
 	template<typename T>
-	static constexpr size_t f__delta(T* a_base, T* a_p)
-	{
-		return a_p > a_base ? a_p->v_n - a_p[-1].v_n : a_p->v_n;
-	}
-	template<typename T>
 	static constexpr T f_get(T* a_base, T* a_p)
 	{
-		return {a_p->v_x, f__delta(a_base, a_p)};
+		return {a_p->v_x, f_delta(a_base, a_p).v_i1};
 	}
 	template<typename T>
 	static constexpr t_index f_delta(T* a_base, T* a_p)
 	{
-		return {1, f__delta(a_base, a_p)};
+		return {1, a_p > a_base ? a_p->v_n - a_p[-1].v_n : a_p->v_n};
 	}
 };
 
