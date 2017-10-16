@@ -38,6 +38,18 @@ int main(int argc, char* argv[])
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
+		f_test_insert(array, vector, 0, f_spans(0, 2));
+		f_assert_equals(array, {
+			t_span{0, 10},
+			t_span{1, 11}
+		});
+		f_test_erase_range(array, vector, 0, 0);
+		f_test_erase_range(array, vector, 1, 0);
+		f_test_erase_range(array, vector, 2, 0);
+	}
+	{
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
+		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 15));
 		assert(f_dump(array) == R"(
 (5, 60)
@@ -572,6 +584,42 @@ int main(int argc, char* argv[])
 		f_test_erase_range(array, vector, 0, 5);
 		// |====.|
 		assert(f_dump(array) == R"(
+)");
+	}
+	{
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
+		std::vector<t_span> vector;
+		f_test_insert(array, vector, 0, f_spans(0, 10));
+		f_test_insert(array, vector, 0, f_spans(10, 1));
+		f_test_erase(array, vector, 0, 1);
+		// |**...| |***..| |=====|
+		f_assert_equals(array, {
+			t_span{0, 10},
+			t_span{1, 11},
+			t_span{2, 12},
+			t_span{3, 13},
+			t_span{4, 14},
+			t_span{5, 15},
+			t_span{6, 16},
+			t_span{7, 17},
+			t_span{8, 18},
+			t_span{9, 19}
+		});
+		assert(f_dump(array) == R"(
+(2, 21)
+(5, 60)
+)");
+		f_test_erase_range(array, vector, 0, 5);
+		// |==...| |===..|
+		f_assert_equals(array, {
+			t_span{5, 15},
+			t_span{6, 16},
+			t_span{7, 17},
+			t_span{8, 18},
+			t_span{9, 19}
+		});
+		assert(f_dump(array) == R"(
+(2, 31)
 )");
 	}
 	return 0;

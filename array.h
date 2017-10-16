@@ -2,7 +2,6 @@
 #define JUMOKU__ARRAY_H
 
 #include "tree.h"
-
 #include <memory>
 
 namespace jumoku
@@ -458,6 +457,7 @@ public:
 	{
 		typename T_traits::t_default use;
 		size_t n = use(a_last.v_index) - use(a_first.v_index);
+		if (n <= 0) return {{a_first.v_leaf, size_t(a_first.v_p - a_first.v_leaf->f_values())}, a_first.v_index};
 		if (n >= use(this->v_size)) {
 			f_clear();
 			return f_begin();
@@ -999,15 +999,15 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 	if (r->v_size - n >= A_leaf / 2) {
 		auto delta = T_traits::f_index(n, w[n - 1]);
 		f_move(w, w + n, vv);
-		f_add(vv, v + A_leaf / 2, T_traits::f_index(0, vv[-1]));
+		if (a_p->v_size > 0) f_add(vv, v + A_leaf / 2, T_traits::f_index(0, vv[-1]));
 		a_p->v_size = A_leaf / 2;
 		r->v_size -= n;
 		f_unshift(w, w + r->v_size, n);
 		f_add(w, w + r->v_size, -delta);
 		q->v_indices[j] += delta;
 	} else {
-		f_move(w, w + r->v_size, v + a_p->v_size);
-		f_add(vv, vv + r->v_size, T_traits::f_index(0, vv[-1]));
+		f_move(w, w + r->v_size, vv);
+		if (a_p->v_size > 0) f_add(vv, vv + r->v_size, T_traits::f_index(0, vv[-1]));
 		a_p->v_size += r->v_size;
 		r->f_unlink();
 		this->f_erase_branch(a_head, a_tail, t_index{});
