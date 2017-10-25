@@ -7,10 +7,10 @@ EXTRA_DIST = \
 CLEANFILES = *.gcda *.gcno *.gcov
 
 AM_CPPFLAGS =
-AM_CXXFLAGS = -fprofile-arcs -ftest-coverage
+AM_CXXFLAGS =
 AM_LDFLAGS =
 if DEBUG
-AM_CXXFLAGS += -g
+AM_CXXFLAGS += -g -fprofile-arcs -ftest-coverage
 else
 AM_CPPFLAGS += -DNDEBUG
 AM_CXXFLAGS += -O3
