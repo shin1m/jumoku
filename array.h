@@ -475,7 +475,7 @@ public:
 		if (i + n > a_first.v_leaf->v_size) {
 			n = a_first.v_leaf->v_size - i;
 			size_t index = use(a_first.v_index) + n;
-			at = f_at(T_traits::f_index(index, T_value{}), path, use);
+			at = f_at(T_traits::f_index(index, *a_first.v_p), path, use);
 			auto tail = path + this->v_depth - 2;
 			size_t j = a_last.v_p - a_last.v_leaf->f_values();
 			if (j <= 0) {
