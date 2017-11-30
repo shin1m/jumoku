@@ -1,0 +1,27 @@
+EXTRA_DIST = test_array.h test_spans.h
+CLEANFILES = *.gcda *.gcno *.gcov
+
+AM_CPPFLAGS = -I..
+AM_CXXFLAGS =
+AM_LDFLAGS =
+if DEBUG
+AM_CXXFLAGS += -g -fprofile-arcs -ftest-coverage
+else
+AM_CPPFLAGS += -DNDEBUG
+AM_CXXFLAGS += -O3
+endif
+if PROFILE
+AM_CXXFLAGS += -pg
+AM_LDFLAGS += -pg
+endif
+AM_DEFAULT_SOURCE_EXT = .cc
+check_PROGRAMS = \
+	test_array \
+	test_array2 \
+	test_array_insert \
+	test_array_erase \
+	test_spans \
+	test_spans_insert \
+	test_spans_erase \
+	test_spans_at
+TESTS = $(check_PROGRAMS)
