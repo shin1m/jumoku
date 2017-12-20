@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <cassert>
 
 namespace jumoku
 {
@@ -32,6 +33,7 @@ inline void f_destruct(T* a_i, T* a_j)
 template<typename T>
 inline void f_move(T* a_p, T* a_q)
 {
+	assert(a_p != a_q);
 	f_construct(a_p, std::move(*a_q));
 	f_destruct(a_q);
 }

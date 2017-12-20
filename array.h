@@ -3,7 +3,6 @@
 
 #include "tree.h"
 #include <memory>
-#include <cassert>
 
 namespace jumoku
 {
@@ -170,6 +169,7 @@ class t_array : public t_tree<T_traits, A_branch>
 		template<typename T>
 		t_delta f_insert(size_t a_i, T a_first, size_t a_n)
 		{
+			assert(a_n > 0);
 			auto p = f_values();
 			std::uninitialized_copy_n(a_first, a_n, f_shift(p + a_i, p + this->v_size, a_n));
 			this->v_size += a_n;
@@ -182,13 +182,14 @@ class t_array : public t_tree<T_traits, A_branch>
 			if (a_i < a_j) {
 				auto p = f_values();
 				f_shift(p + a_i, p + v_size, a_j - a_i);
-			} else {
+			} else if (a_i > a_j) {
 				auto p = f_values() + a_j;
 				f_unshift(p, p + v_size - a_i, a_i - a_j);
 			}
 		}
 		t_delta f_erase(size_t a_i, size_t a_n)
 		{
+			assert(a_n > 0);
 			this->v_size -= a_n;
 			auto delta = f_delta(a_i, a_n);
 			auto p = f_values() + a_i;
@@ -201,6 +202,7 @@ class t_array : public t_tree<T_traits, A_branch>
 		t_delta f_erase(t_leaf* a_p, size_t a_shift, size_t a_i, size_t a_n)
 		{
 			assert(a_shift > 0);
+			assert(a_n > 0);
 			this->v_size -= a_shift;
 			assert(this->v_size > 0);
 			a_p->v_size = A_leaf / 2;
@@ -210,7 +212,7 @@ class t_array : public t_tree<T_traits, A_branch>
 			f_destruct(q, q + a_n);
 			auto r = f_values() + this->v_size;
 			f_move(r, r + a_shift, f_shift(p, q, a_shift));
-			f_unshift(q + a_shift, p + A_leaf / 2, a_n - a_shift);
+			if (a_n > a_shift) f_unshift(q + a_shift, p + A_leaf / 2, a_n - a_shift);
 			f_add(p, p + a_shift, -T_traits::f_index(0, r[-1]));
 			auto d = T_traits::f_index(0, p[a_shift - 1]);
 			f_add(p + a_shift, q + a_shift, d);
@@ -220,6 +222,7 @@ class t_array : public t_tree<T_traits, A_branch>
 		t_delta f_erase(size_t a_i, size_t a_n, size_t a_shift, t_leaf* a_p)
 		{
 			assert(a_shift > 0);
+			assert(a_n > 0);
 			auto delta = f_delta(a_i, a_n);
 			auto p = f_values() + a_i;
 			f_destruct(p, p + a_n);
@@ -238,6 +241,7 @@ class t_array : public t_tree<T_traits, A_branch>
 		t_delta f_merge(t_leaf* a_p, size_t a_i, size_t a_n)
 		{
 			assert(this->v_size > 0);
+			assert(a_n > 0);
 			auto delta = a_p->f_delta(a_i, a_n);
 			auto p = a_p->f_values();
 			auto q = p + a_i;
@@ -252,6 +256,7 @@ class t_array : public t_tree<T_traits, A_branch>
 		}
 		t_delta f_merge(size_t a_i, size_t a_n, t_leaf* a_p)
 		{
+			assert(a_n > 0);
 			auto delta = f_delta(a_i, a_n);
 			auto p = f_values() + a_i;
 			f_destruct(p, p + a_n);
@@ -527,7 +532,7 @@ private:
 	{
 	}
 	template<typename T_use>
-	static void f_finalize(T_use& a_use, t_at& i)
+	static void f_finalize(T_use a_use, t_at& i)
 	{
 		auto p = static_cast<t_leaf*>(i.v_node);
 		auto q = p->f_values();
@@ -554,7 +559,7 @@ public:
 	template<typename T_use>
 	t_constant_iterator f_at(size_t a_index, T_use a_use) const
 	{
-		return const_cast<t_array*>(this)->f_at(a_index, std::forward<T_use>(a_use));
+		return const_cast<t_array*>(this)->f_at(a_index, a_use);
 	}
 	t_mutable_iterator f_at(size_t a_index)
 	{
@@ -623,6 +628,7 @@ template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
 template<typename T>
 typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_leaf, A_branch, T_traits>::f_insert_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, T a_first, size_t a_n)
 {
+	assert(a_n > 0);
 	// |= N  =| |= N =| |= N  =|
 	// |=n0=|.| |=n=|.| |=n1=|.|
 	//             ^i|m|
@@ -721,7 +727,7 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 					auto delta = r->f_place(r->v_size, a_n);
 					r->v_size += a_n;
 					q->v_indices[j - 1] += delta;
-					f_unshift(v, v + ni, i);
+					if (i > 0) f_unshift(v, v + ni, i);
 					p->v_size = ni;
 					f_add(v, v + ni, -dii);
 					this->f_adjust(a_head, a_tail, delta);
@@ -915,6 +921,7 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
 typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_leaf, A_branch, T_traits>::f_erase_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, size_t a_n)
 {
+	assert(a_n > 0);
 	auto p = static_cast<t_leaf*>(a_at.v_node);
 	size_t i = a_at.v_index;
 	if (a_head == a_tail) {
@@ -1070,7 +1077,8 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 			a_q->v_size = A_leaf / 2;
 			size_t d = A_leaf / 2 - b;
 			auto vv = a_p->f_values() + a_p->v_size;
-			f_unshift(f_move(vv, v, w), w + a_q->v_size, a_j - d);
+			auto ww = f_move(vv, v, w);
+			if (a_j > d) f_unshift(ww, w + a_q->v_size, a_j - d);
 			f_add(w, w + d, -T_traits::f_index(0, vv[-1]));
 			auto dd = T_traits::f_index(d, w[d - 1]);
 			f_add(w + d, w + a_q->v_size, dd - dj);
