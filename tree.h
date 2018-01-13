@@ -288,6 +288,11 @@ protected:
 	}
 
 public:
+	t_tree() = default;
+	t_tree(const t_tree&) = delete;
+	t_tree(t_tree&&) = delete;
+	t_tree& operator=(const t_tree&) = delete;
+	t_tree& operator=(t_tree&&) = delete;
 	const t_index& f_size() const
 	{
 		return v_size;
