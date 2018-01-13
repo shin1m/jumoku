@@ -298,6 +298,19 @@ class t_array : public t_tree<T_traits, A_branch>
 	t_at f_erase_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, size_t a_n);
 	t_at f_merge_leaf(t_via* a_head, t_via* a_tail, t_leaf* a_p, size_t a_i);
 	t_at f_merge_leaf(t_via* a_head, t_via* a_tail, t_leaf* a_p, size_t a_i, t_leaf* a_q, size_t a_j);
+	static void f_finalize(typename T_traits::t_default&, t_at&)
+	{
+	}
+	template<typename T_use>
+	static void f_finalize(T_use a_use, t_at& i)
+	{
+		auto p = static_cast<t_leaf*>(i.v_node);
+		auto q = p->f_values();
+		i.v_index = std::upper_bound(q, q + p->v_size, i.v_index, [&a_use](size_t a_x, const T_value& a_y)
+		{
+			return a_x < a_use(T_traits::f_index(1, a_y));
+		}) - q;
+	}
 
 public:
 	template<typename T>
@@ -527,21 +540,6 @@ public:
 		}
 		return {f_erase_leaf(path, path + this->v_depth - 1, at, n), a_first.v_index};
 	}
-private:
-	static void f_finalize(typename T_traits::t_default&, t_at&)
-	{
-	}
-	template<typename T_use>
-	static void f_finalize(T_use a_use, t_at& i)
-	{
-		auto p = static_cast<t_leaf*>(i.v_node);
-		auto q = p->f_values();
-		i.v_index = std::upper_bound(q, q + p->v_size, i.v_index, [&a_use](size_t a_x, const T_value& a_y)
-		{
-			return a_x < a_use(T_traits::f_index(1, a_y));
-		}) - q;
-	}
-public:
 	template<typename T_use>
 	t_mutable_iterator f_at(size_t a_index, T_use a_use)
 	{
