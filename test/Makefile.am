@@ -2,7 +2,7 @@ EXTRA_DIST = test_array.h test_spans.h
 CLEANFILES = *.gcda *.gcno *.gcov
 
 AM_CPPFLAGS = -I..
-AM_CXXFLAGS =
+AM_CXXFLAGS = -std=c++17
 AM_LDFLAGS =
 if DEBUG
 AM_CXXFLAGS += -g -fprofile-arcs -ftest-coverage

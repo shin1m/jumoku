@@ -5,11 +5,13 @@
 #include <vector>
 #include <cassert>
 
+using namespace std::literals;
+
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
 std::string f_dump(const jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a_array)
 {
-	std::string s = R"(
-)";
+	auto s = R"(
+)"s;
 	a_array.f_dump([&](auto a_level, auto a_index)
 	{
 		s += std::string(a_level, ' ') + std::to_string(a_index) + R"(

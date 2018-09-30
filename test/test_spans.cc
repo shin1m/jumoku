@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 		assert(array.f_empty());
 		f_assert_equals(array, {});
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 		f_test_insert(array, vector, 0, f_spans(0, 1));
 		assert(!array.f_empty());
 		f_test_insert(array, vector, 0, f_spans(1, 2));
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (3, 38)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (3, 36)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -67,18 +67,18 @@ int main(int argc, char* argv[])
 		f_test_insert(array, vector, 0, f_spans(0, 5));
 		// xxxxx
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 		f_test_insert(array, vector, 0, f_spans(5, 5));
 		// xxxxx xxxxx
 		assert(f_dump(array) == R"(
 (5, 85)
-)");
+)"sv);
 		f_test_insert(array, vector, 0, f_spans(10, 5));
 		// xxxxx xxxxx xxxxx
 		assert(f_dump(array) == R"(
 (5, 110)
 (10, 195)
-)");
+)"sv);
 		f_test_insert(array, vector, 8, f_spans(15, 1));
 		// xxxxx xxx xxx xxxxx
 		f_assert_equals(array, {
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 (5, 110)
 (8, 158)
 (11, 220)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -112,12 +112,12 @@ int main(int argc, char* argv[])
 		// xxx xxxxx
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 		f_test_insert(array, vector, 3, f_spans(8, 1));
 		// xxxx xxxxx
 		assert(f_dump(array) == R"(
 (4, 51)
-)");
+)"sv);
 		f_test_insert(array, vector, 5, f_spans(9, 1));
 		// xxxxx xxxxx
 		f_assert_equals(array, {
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 64)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
 (15, 255)
 (20, 390)
 (25, 550)
-)");
+)"sv);
 		f_test_insert(array, vector, 10, f_spans(30, 5));
 		//        i
 		//  i i i   i i
@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
 (20, 465)
  (5, 135)
  (10, 295)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 (20, 429)
  (3, 84)
  (8, 244)
-)");
+)"sv);
 		f_test_insert(array, vector, 18, f_spans(33, 1));
 		//          i
 		//  i i i i   i i
@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
 (21, 472)
  (3, 84)
  (8, 244)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
 (15, 255)
 (20, 390)
 (25, 550)
-)");
+)"sv);
 		f_test_insert(array, vector, 20, f_spans(30, 5));
 		//        i
 		//  i i i   i i
@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
 (20, 390)
  (5, 210)
  (10, 370)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -227,7 +227,7 @@ int main(int argc, char* argv[])
 		f_test_erase(array, vector, 0, 1);
 		f_assert_equals(array, {});
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
 		f_test_erase(array, vector, 1, 1);
 		f_assert_equals(array, f_spans(0, 1));
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
 		// xxx xxx
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 		f_test_erase(array, vector, 1, 1);
 		// xx xxx
 		f_assert_equals(array, {
@@ -257,7 +257,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (2, 22)
-)");
+)"sv);
 		f_test_erase(array, vector, 1, 1);
 		// xx xx
 		f_assert_equals(array, {
@@ -268,7 +268,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (2, 23)
-)");
+)"sv);
 		f_test_erase(array, vector, 1, 1);
 		// xxx
 		f_assert_equals(array, {
@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
 			t_span{5, 15}
 		});
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -286,7 +286,7 @@ int main(int argc, char* argv[])
 		// xxx xxx
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 		f_test_erase(array, vector, 3, 1);
 		// xxx xx
 		f_assert_equals(array, {
@@ -298,7 +298,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 		f_test_erase(array, vector, 3, 1);
 		// xx xx
 		f_assert_equals(array, {
@@ -309,7 +309,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (2, 21)
-)");
+)"sv);
 		f_test_erase(array, vector, 3, 1);
 		// xxx
 		f_assert_equals(array, {
@@ -318,7 +318,7 @@ int main(int argc, char* argv[])
 			t_span{2, 12},
 		});
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -328,7 +328,7 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (5, 60)
 (10, 145)
-)");
+)"sv);
 		f_test_erase(array, vector, 3, 8);
 		// xx xx xxx
 		f_assert_equals(array, {
@@ -343,7 +343,7 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (2, 21)
 (4, 54)
-)");
+)"sv);
 		f_test_erase(array, vector, 3, 1);
 		// xx xx xx
 		f_assert_equals(array, {
@@ -357,7 +357,7 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (2, 21)
 (4, 55)
-)");
+)"sv);
 		f_test_erase(array, vector, 3, 1);
 		// xx xxx
 		f_assert_equals(array, {
@@ -369,7 +369,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (2, 21)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -386,7 +386,7 @@ int main(int argc, char* argv[])
  (5, 160)
  (10, 345)
  (15, 555)
-)");
+)"sv);
 		f_test_erase(array, vector, 0, 7);
 		//      i
 		//  i i   i i i
@@ -398,7 +398,7 @@ int main(int argc, char* argv[])
  (5, 160)
  (10, 345)
  (15, 555)
-)");
+)"sv);
 		f_test_erase(array, vector, 0, 5);
 		//      i
 		//  i i   i i
@@ -409,7 +409,7 @@ int main(int argc, char* argv[])
 (13, 364)
  (5, 185)
  (10, 395)
-)");
+)"sv);
 		f_test_erase(array, vector, 0, 5);
 		//  i i i i
 		// x x x x x
@@ -418,7 +418,7 @@ int main(int argc, char* argv[])
 (8, 244)
 (13, 429)
 (18, 639)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -434,7 +434,7 @@ int main(int argc, char* argv[])
 (20, 390)
  (5, 160)
  (10, 345)
-)");
+)"sv);
 		f_test_erase(array, vector, 23, 9);
 		//                        i
 		//      i     i     i        i  i
@@ -446,7 +446,7 @@ int main(int argc, char* argv[])
 (20, 390)
  (2, 61)
  (4, 135)
-)");
+)"sv);
 		f_test_erase(array, vector, 23, 1);
 		//                  i
 		//      i     i           i  i
@@ -457,7 +457,7 @@ int main(int argc, char* argv[])
 (15, 255)
  (5, 135)
  (7, 196)
-)");
+)"sv);
 		f_test_erase(array, vector, 23, 2);
 		//      i     i     i     i
 		// xxxxx xxxxx xxxxx xxxxx xxx
@@ -467,7 +467,7 @@ int main(int argc, char* argv[])
 (10, 145)
 (15, 255)
 (20, 390)
-)");
+)"sv);
 	}
 	return 0;
 }

@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 			t_span{4, 14}
 		});
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (2, 23)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 3, f_spans(8, 1));
 		// |=   N    =| |=  N  =|
 		// |=n0+i=|*|.| |=n-i=|.|
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (4, 54)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 		f_test_erase(array, vector, 0, 1);
 		assert(f_dump(array) == R"(
 (2, 23)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 3, f_spans(8, 2));
 		// |=  N   =| |=  N  =|
 		// |=n0+i=|*| |=n-i=|.|
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 73)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (2, 23)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 4, f_spans(7, 2));
 		// |=  N   =| |=   N   =|
 		// |=n0+i=|*| |*|=n-i=|.|
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 67)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (2, 23)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 3, f_spans(6, 5));
 		// |=  N   =| |=  N  =|
 		// |=n0+i=|*| |*|=n-i=|
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 69)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 		f_test_erase(array, vector, 0, 1);
 		assert(f_dump(array) == R"(
 (2, 23)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 5, f_spans(7, 2));
 		// |=N=| |=   N   =|
 		// |=N=| |*|=n-i=|.|
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 65)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
 		f_test_erase(array, vector, 0, 1);
 		assert(f_dump(array) == R"(
 (2, 23)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 6, f_spans(8, 1));
 		// |=N=| |=     N      =|
 		// |=N=| |=i'=|*|=n-i=|.|
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 65)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
 		f_test_insert(array, vector, 0, f_spans(0, 6));
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 5, f_spans(6, 3));
 		// |=N=| |=   N   =|
 		// |=N=| |*|=n-i=|.|
@@ -224,7 +224,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 60)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (4, 50)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 6, f_spans(10, 2));
 		// |=N=| |=    N     =|
 		// |=N=| |=i'=|*|=n-i=|
@@ -263,7 +263,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 65)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -281,7 +281,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (4, 52)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 2, f_spans(7, 2));
 		// |=  N  =| |=  N   =|
 		// |=i=|*|=n-i=|=n1=|.|
@@ -298,7 +298,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 76)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -322,7 +322,7 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (4, 50)
 (8, 119)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 6, f_spans(12, 4));
 		// |=N=| |= N  =| |=   N    =|
 		// |=N=| |=i'=|*| |=n-i=|=n1=|
@@ -346,7 +346,7 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (5, 65)
 (10, 175)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -364,7 +364,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (4, 52)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 3, f_spans(7, 4));
 		// |= N =| |=    N     =|
 		// |=i=|*****|=n-i=|=n1=|
@@ -382,7 +382,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (5, 76)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -406,7 +406,7 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (4, 50)
 (8, 119)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 7, f_spans(12, 4));
 		// |=N=| |= N  =| |=     N      =|
 		// |=N=| |=i'=|*****|=n-i=|=n1=|.|
@@ -429,14 +429,14 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (5, 65)
 (10, 171)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 5));
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 		f_test_insert_range(array, vector, 1, f_spans(5, 2));
 		// |=  N  =| |=N=|
 		// |=i=|*|=n-i=|.|
@@ -451,7 +451,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (4, 52)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -459,7 +459,7 @@ int main(int argc, char* argv[])
 		f_test_insert(array, vector, 0, f_spans(0, 10));
 		assert(f_dump(array) == R"(
 (5, 60)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 6, f_spans(10, 1));
 		// |=N=| |=N=| |=N=|
 		// |=N=| |*|=n-i=|.|
@@ -479,14 +479,14 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (5, 60)
 (8, 111)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 4));
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 		f_test_insert_range(array, vector, 2, f_spans(4, 4));
 		// |= N =| |=   N   =|
 		// |=i=|*****|=n-i=|.|
@@ -502,7 +502,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (4, 50)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -510,7 +510,7 @@ int main(int argc, char* argv[])
 		f_test_insert(array, vector, 0, f_spans(0, 7));
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 6, f_spans(7, 4));
 		// |=N=| |= N  =| |=   N   =|
 		// |=N=| |=i'=|*****|=n-i=|.|
@@ -530,14 +530,14 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (5, 60)
 (8, 110)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 4));
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 		f_test_insert_range(array, vector, 3, f_spans(4, 2));
 		// |= N =| |=   N   =|
 		// |=i=|.| |*|=n-i=|.|
@@ -551,14 +551,14 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 5));
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 		f_test_insert_range(array, vector, 5, f_spans(5, 1));
 		// |=N=| |= N =|
 		// |=  i  =|*|.|
@@ -572,7 +572,7 @@ int main(int argc, char* argv[])
 		});
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -604,7 +604,7 @@ int main(int argc, char* argv[])
 (4, 50)
 (9, 135)
 (14, 245)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 8, f_spans(20, 2));
 		// |=N=| |= N  =| |=   N   =| |=N=| |=N=|
 		// |=N=| |=i'=|.| |*|=n-i=|.| |=N=| |=N=|
@@ -636,7 +636,7 @@ int main(int argc, char* argv[])
 (8, 116)
 (11, 196)
 (16, 306)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -668,7 +668,7 @@ int main(int argc, char* argv[])
 (5, 60)
 (10, 145)
 (15, 255)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 9, f_spans(20, 1));
 		// |=N=| |=N=| |=    N    =| |=N=| |=N=|
 		// |=N=| |=  i  =|*|=n-i=|.| |=N=| |=N=|
@@ -700,14 +700,14 @@ int main(int argc, char* argv[])
 (8, 108)
 (11, 175)
 (16, 285)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 5));
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 		f_test_insert_range(array, vector, 2, f_spans(5, 6));
 		// |= N =| |=N=| |=  N  =|
 		// |=i=|*******| |=n-i=|.|
@@ -727,14 +727,14 @@ int main(int argc, char* argv[])
 		assert(f_dump(array) == R"(
 (5, 69)
 (8, 126)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
 		f_test_insert(array, vector, 0, f_spans(0, 5));
 		assert(f_dump(array) == R"(
-)");
+)"sv);
 		f_test_insert_range(array, vector, 2, f_spans(5, 13));
 		// |= N =| |=N=| |=N=| |=   N   =|
 		// |=i=|*****************|=n-i=|.|
@@ -762,7 +762,7 @@ int main(int argc, char* argv[])
 (5, 69)
 (10, 169)
 (14, 267)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -770,7 +770,7 @@ int main(int argc, char* argv[])
 		f_test_insert_range(array, vector, 0, f_spans(0, 6));
 		assert(f_dump(array) == R"(
 (3, 33)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
@@ -782,7 +782,7 @@ int main(int argc, char* argv[])
 (15, 255)
 (20, 390)
 (25, 550)
-)");
+)"sv);
 		f_test_insert_range(array, vector, 15, f_spans(30, 6));
 		f_assert_equals(array, {
 			t_span{0, 10},
@@ -830,7 +830,7 @@ int main(int argc, char* argv[])
  (3, 96)
  (6, 180)
  (11, 340)
-)");
+)"sv);
 	}
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
