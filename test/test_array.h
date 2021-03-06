@@ -1,4 +1,4 @@
-#include "array.h"
+#include <jumoku/array.h>
 
 #include <iostream>
 #include <numeric>
