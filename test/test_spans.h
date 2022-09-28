@@ -58,8 +58,8 @@ struct t_index
 
 struct t_traits
 {
-	typedef ::t_index<size_t> t_index;
-	typedef ::t_index<int> t_delta;
+	using t_index = ::t_index<size_t>;
+	using t_delta = ::t_index<int>;
 	struct t_default
 	{
 		constexpr size_t operator()(const t_index& a_index) const

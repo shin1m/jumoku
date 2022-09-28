@@ -9,8 +9,8 @@ namespace jumoku
 
 struct t_traits
 {
-	typedef size_t t_index;
-	typedef int t_delta;
+	using t_index = size_t;
+	using t_delta = int;
 	struct t_default
 	{
 		constexpr size_t operator()(size_t a_index) const
@@ -327,11 +327,11 @@ public:
 		}
 
 	public:
-		typedef std::ptrdiff_t difference_type;
-		typedef std::remove_const_t<T> value_type;
-		typedef T* pointer;
-		typedef T& reference;
-		typedef std::bidirectional_iterator_tag iterator_category;
+		using difference_type = std::ptrdiff_t;
+		using value_type = std::remove_const_t<T>;
+		using pointer = T*;
+		using reference = T&;
+		using iterator_category = std::bidirectional_iterator_tag;
 
 		t_iterator() = default;
 		t_iterator(const t_iterator<std::remove_const_t<T>>& a_x) : v_p(a_x.v_p), v_leaf(a_x.v_leaf), v_index(a_x.v_index)
@@ -400,8 +400,8 @@ public:
 			return i;
 		}
 	};
-	typedef t_iterator<T_value> t_mutable_iterator;
-	typedef t_iterator<const T_value> t_constant_iterator;
+	using t_mutable_iterator = t_iterator<T_value>;
+	using t_constant_iterator = t_iterator<const T_value>;
 
 	t_array()
 	{
