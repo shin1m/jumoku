@@ -422,11 +422,11 @@ public:
 	}
 	t_mutable_iterator f_begin()
 	{
-		return {{v_link.v_next, 0}, t_index{}};
+		return {{v_link.v_next, 0}, {}};
 	}
 	t_constant_iterator f_begin() const
 	{
-		return {{v_link.v_next, 0}, t_index{}};
+		return {{v_link.v_next, 0}, {}};
 	}
 	t_mutable_iterator f_end()
 	{
@@ -668,12 +668,10 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 	//   l.node = ?
 	//   i' = 0
 	//   m' + n - i > N
-	// if l.node != n
-	//   while m' + n - i > N * 2
-	//     |=N=| ? |=    N    =| ...
-	//     |***| ? |.i.|=n-i=|.| ...
-	//     m' = m' - N
-	//   N < m' + n - i <= N * 2
+	// while m' + n - i > N * 2
+	//   |=N=| ? |=    N    =| ...
+	//   |***| ? |.i.|=n-i=|.| ...
+	//   m' = m' - N
 	// N < i' + m' + n - i <= N * 2
 	// if n1 exists && i' + m' + n - i + n1 <= N * 2
 	//   |=  N   =| |=  N   =|
@@ -788,36 +786,46 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 		// l.node = ?
 		// i' = 0
 		if (ii > 0) dii += T_traits::f_index(ii, v[ii - 1]);
-		auto r = new t_leaf(A_leaf, p);
-		auto w = f_move(v, v + ii, r->f_values());
-		if (ii < A_leaf) {
-			size_t n = A_leaf - ii;
-			std::uninitialized_copy_n(a_first, n, w);
+		size_t n = A_leaf - ii;
+		if (ii <= ni) {
+			auto r = new t_leaf(A_leaf, p);
+			std::uninitialized_copy_n(a_first, n, f_move(v, v + ii, r->f_values()));
 			auto delta = r->f_place(ii, n);
-			a_first += n;
-			a_n -= n;
 			a_tail = this->f_insert_branch(a_head, a_tail, T_traits::f_index(A_leaf, r->f_values()[A_leaf - 1]), delta, r, false, true);
 			this->v_size += delta;
+			l.v_node = r;
 		} else {
-			a_tail = this->f_insert_branch(a_head, a_tail, T_traits::f_index(A_leaf, r->f_values()[A_leaf - 1]), t_delta{}, r, false, true);
+			auto r = new t_leaf(p, p->v_size);
+			if (n > 0) {
+				f_move(v + i, v + p->v_size, r->f_values() + i);
+				p->v_size = A_leaf;
+				std::uninitialized_copy_n(a_first, n, v + ii);
+				auto delta = p->f_place(ii, n);
+				a_tail = this->f_insert_branch(a_head, a_tail, T_traits::f_index(A_leaf, v[A_leaf - 1]), delta, r, true, true);
+				this->v_size += delta;
+			} else {
+				a_tail = this->f_insert_branch(a_head, a_tail, T_traits::f_index(A_leaf, v[A_leaf - 1]), {}, r, true, true);
+			}
+			p = r;
+			v = r->f_values();
 		}
-		l.v_node = r;
+		a_first += n;
+		a_n -= n;
 		ii = 0;
 		// m' + n - i > N
 	}
-	// if l.node != n
-	//   while m' + n - i > N * 2
-	//     |=N=| ? |=    N    =| ...
-	//     |***| ? |.i.|=n-i=|.| ...
-	//     m' = m' - N
-	//   N < m' + n - i <= N * 2
-	if (l.v_node != p) while (a_n + ni > A_leaf * 2) {
+	// while m' + n - i > N * 2
+	//   |=N=| ? |=    N    =| ...
+	//   |***| ? |.i.|=n-i=|.| ...
+	//   m' = m' - N
+	while (a_n + ni > A_leaf * 2) {
+		assert(l.v_node != p);
 		auto r = new t_leaf(A_leaf, p);
 		std::uninitialized_copy_n(a_first, A_leaf, r->f_values());
 		auto delta = r->f_place(0, A_leaf);
 		a_first += A_leaf;
 		a_n -= A_leaf;
-		a_tail = this->f_insert_branch(a_head, a_tail, T_traits::f_index(A_leaf, r->f_values()[A_leaf - 1]), delta, r, false, true);
+		a_tail = this->f_insert_branch(a_head, a_tail, delta, delta, r, false, true);
 		this->v_size += delta;
 	}
 	// N < i' + m' + n - i <= N * 2
@@ -924,8 +932,7 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 	auto p = static_cast<t_leaf*>(a_at.v_node);
 	size_t i = a_at.v_index;
 	if (a_head == a_tail) {
-		auto delta = p->f_erase(i, a_n);
-		this->v_size -= delta;
+		this->v_size -= p->f_erase(i, a_n);
 		if (i < p->v_size) return {p, i};
 		if (p->v_size <= 0) {
 			this->v_root = nullptr;
@@ -939,15 +946,14 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 		this->v_size -= delta;
 		return i < p->v_size ? t_at{p, i} : t_at{p->v_next, 0};
 	}
+	size_t n = A_leaf / 2 + a_n - p->v_size;
 	auto q = a_tail[-1].v_node;
 	size_t j = a_tail[-1].v_index;
 	if (j > 0) {
 		auto r = p->v_previous;
-		size_t n = A_leaf / 2 + a_n - p->v_size;
 		if (r->v_size - n >= A_leaf / 2) {
-			auto size = T_traits::f_index(n, r->f_values()[r->v_size - 1]);
 			auto delta = r->f_erase(p, n, i, a_n);
-			q->v_indices[j - 1] -= size - T_traits::f_index(0, r->f_values()[r->v_size - 1]);
+			q->v_indices[j - 1] -= T_traits::f_index(n, p->f_values()[n - 1]);
 			this->f_adjust(a_head, a_tail, -delta);
 			this->v_size -= delta;
 			i += n;
@@ -964,11 +970,10 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 		}
 	}
 	auto r = p->v_next;
-	size_t n = A_leaf / 2 + a_n - p->v_size;
 	if (r->v_size - n >= A_leaf / 2) {
-		auto size = T_traits::f_index(p->v_size, p->f_values()[p->v_size - 1]);
+		auto size = T_traits::f_index(n, r->f_values()[n - 1]);
 		auto delta = p->f_erase(i, a_n, n, r);
-		q->v_indices[j] += T_traits::f_index(A_leaf / 2, p->f_values()[A_leaf / 2 - 1]) + delta - size;
+		q->v_indices[j] += size;
 		this->f_adjust(a_head, a_tail, -delta);
 		this->v_size -= delta;
 	} else {
@@ -1010,7 +1015,7 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 			f_add(w, w + a_p->v_size, T_traits::f_index(0, w[-1]));
 			r->v_size += a_p->v_size;
 			a_p->f_unlink();
-			this->f_erase_branch(a_head, a_tail, t_index{});
+			this->f_erase_branch(a_head, a_tail, {});
 			return a_i < r->v_size ? t_at{r, a_i} : t_at{r->v_next, 0};
 		}
 	}
@@ -1031,7 +1036,7 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 		if (a_p->v_size > 0) f_add(vv, vv + r->v_size, T_traits::f_index(0, vv[-1]));
 		a_p->v_size += r->v_size;
 		r->f_unlink();
-		this->f_erase_branch(a_head, a_tail, t_index{});
+		this->f_erase_branch(a_head, a_tail, {});
 	}
 	return {a_p, a_i};
 }
@@ -1047,14 +1052,14 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 	auto w = a_q->f_values();
 	assert(a_j > 0);
 	auto dj = T_traits::f_index(a_j, w[a_j - 1]);
-	f_destruct(v, v + a);
-	f_destruct(w, w + a_j);
-	size_t b = a_q->v_size - a_j;
 	auto q = a_tail->v_node;
 	size_t j = a_tail->v_index - 1;
 	q->v_indices[j] -= delta;
 	delta += dj;
 	this->v_size -= delta;
+	f_destruct(v, v + a);
+	f_destruct(w, w + a_j);
+	size_t b = a_q->v_size - a_j;
 	size_t m = a_i + b;
 	if (m >= A_leaf / 2 * 2) {
 		this->f_adjust(a_head, a_tail + 1, -delta);
