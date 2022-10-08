@@ -913,7 +913,8 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 	assert(p->v_size > 0);
 	this->f_insert_branch(a_head, a_tail, T_traits::f_index(p->v_size, p->f_values()[p->v_size - 1]), delta, r, true, false);
 	this->v_size += delta;
-	return l;
+	p = static_cast<t_leaf*>(l.v_node);
+	return p->v_next && l.v_index >= p->v_size ? t_at{p->v_next, 0} : l;
 }
 
 template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>

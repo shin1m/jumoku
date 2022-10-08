@@ -427,6 +427,19 @@ int main(int argc, char* argv[])
 	{
 		jumoku::t_array<int, 5, 5> array;
 		std::vector<int> vector;
+		f_test_insert_range(array, vector, 0, f_range(0, 5));
+		assert(f_dump(array) == R"(
+)"sv);
+		f_test_insert_range(array, vector, 5, f_range(5, 15));
+		assert(f_dump(array) == R"(
+5
+10
+15
+)"sv);
+	}
+	{
+		jumoku::t_array<int, 5, 5> array;
+		std::vector<int> vector;
 		f_test_insert_range(array, vector, 0, f_range(0, 1000));
 	}
 	return 0;

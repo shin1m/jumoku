@@ -835,6 +835,41 @@ int main(int argc, char* argv[])
 	{
 		jumoku::t_array<t_span, 5, 5, t_traits> array;
 		std::vector<t_span> vector;
+		f_test_insert_range(array, vector, 0, f_spans(0, 5));
+		assert(f_dump(array) == R"(
+)"sv);
+		f_test_insert_range(array, vector, 5, f_spans(5, 15));
+		f_assert_equals(array, {
+			t_span{0, 10},
+			t_span{1, 11},
+			t_span{2, 12},
+			t_span{3, 13},
+			t_span{4, 14},
+			t_span{5, 15},
+			t_span{6, 16},
+			t_span{7, 17},
+			t_span{8, 18},
+			t_span{9, 19},
+			t_span{10, 20},
+			t_span{11, 21},
+			t_span{12, 22},
+			t_span{13, 23},
+			t_span{14, 24},
+			t_span{15, 25},
+			t_span{16, 26},
+			t_span{17, 27},
+			t_span{18, 28},
+			t_span{19, 29}
+		});
+		assert(f_dump(array) == R"(
+(5, 60)
+(10, 145)
+(15, 255)
+)"sv);
+	}
+	{
+		jumoku::t_array<t_span, 5, 5, t_traits> array;
+		std::vector<t_span> vector;
 		f_test_insert_range(array, vector, 0, f_spans(0, 1000));
 	}
 	return 0;
