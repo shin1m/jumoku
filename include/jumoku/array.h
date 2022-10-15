@@ -2,7 +2,6 @@
 #define JUMOKU__ARRAY_H
 
 #include "tree.h"
-#include <memory>
 
 namespace jumoku
 {
@@ -136,9 +135,9 @@ class t_array : public t_tree<T_traits, A_branch>
 		void f_insert(size_t a_i, T&& a_value)
 		{
 			auto p = f_values();
-			f_construct(f_shift(p + a_i, p + this->v_size, 1), std::forward<T>(a_value));
-			++this->v_size;
-			f_add(p + a_i + 1, p + this->v_size, f_place(a_i, 1));
+			f_construct(f_shift(p + a_i, p + v_size, 1), std::forward<T>(a_value));
+			++v_size;
+			f_add(p + a_i + 1, p + v_size, f_place(a_i, 1));
 		}
 		template<typename T>
 		void f_insert(t_leaf* a_p, size_t a_i, T&& a_value)
@@ -171,10 +170,10 @@ class t_array : public t_tree<T_traits, A_branch>
 		{
 			assert(a_n > 0);
 			auto p = f_values();
-			std::uninitialized_copy_n(a_first, a_n, f_shift(p + a_i, p + this->v_size, a_n));
-			this->v_size += a_n;
+			std::uninitialized_copy_n(a_first, a_n, f_shift(p + a_i, p + v_size, a_n));
+			v_size += a_n;
 			auto delta = f_place(a_i, a_n);
-			f_add(p + a_i + a_n, p + this->v_size, delta);
+			f_add(p + a_i + a_n, p + v_size, delta);
 			return delta;
 		}
 		void f_slide(size_t a_i, size_t a_j)
@@ -190,11 +189,11 @@ class t_array : public t_tree<T_traits, A_branch>
 		t_delta f_erase(size_t a_i, size_t a_n)
 		{
 			assert(a_n > 0);
-			this->v_size -= a_n;
+			v_size -= a_n;
 			auto delta = f_delta(a_i, a_n);
 			auto p = f_values() + a_i;
-			f_destruct(p, p + a_n);
-			auto q = f_values() + this->v_size;
+			std::destroy(p, p + a_n);
+			auto q = f_values() + v_size;
 			f_unshift(p, q, a_n);
 			f_add(p, q, -delta);
 			return delta;
@@ -203,14 +202,14 @@ class t_array : public t_tree<T_traits, A_branch>
 		{
 			assert(a_shift > 0);
 			assert(a_n > 0);
-			this->v_size -= a_shift;
-			assert(this->v_size > 0);
+			v_size -= a_shift;
+			assert(v_size > 0);
 			a_p->v_size = A_leaf / 2;
 			auto delta = a_p->f_delta(a_i, a_n);
 			auto p = a_p->f_values();
 			auto q = p + a_i;
-			f_destruct(q, q + a_n);
-			auto r = f_values() + this->v_size;
+			std::destroy(q, q + a_n);
+			auto r = f_values() + v_size;
 			f_move(r, r + a_shift, f_shift(p, q, a_shift));
 			if (a_n > a_shift) f_unshift(q + a_shift, p + A_leaf / 2, a_n - a_shift);
 			f_add(p, p + a_shift, -T_traits::f_index(0, r[-1]));
@@ -225,14 +224,14 @@ class t_array : public t_tree<T_traits, A_branch>
 			assert(a_n > 0);
 			auto delta = f_delta(a_i, a_n);
 			auto p = f_values() + a_i;
-			f_destruct(p, p + a_n);
-			auto q = f_values() + this->v_size - a_n;
+			std::destroy(p, p + a_n);
+			auto q = f_values() + v_size - a_n;
 			auto r = a_p->f_values();
 			auto d = -T_traits::f_index(0, r[a_shift - 1]);
 			f_move(r, r + a_shift, f_unshift(p, q, a_n));
 			f_add(p, q, -delta);
-			if (this->v_size - a_n > 0) f_add(q, f_values() + A_leaf / 2, T_traits::f_index(0, q[-1]));
-			this->v_size = A_leaf / 2;
+			if (v_size - a_n > 0) f_add(q, f_values() + A_leaf / 2, T_traits::f_index(0, q[-1]));
+			v_size = A_leaf / 2;
 			a_p->v_size -= a_shift;
 			f_unshift(r, r + a_p->v_size, a_shift);
 			f_add(r, r + a_p->v_size, d);
@@ -240,18 +239,18 @@ class t_array : public t_tree<T_traits, A_branch>
 		}
 		t_delta f_merge(t_leaf* a_p, size_t a_i, size_t a_n)
 		{
-			assert(this->v_size > 0);
+			assert(v_size > 0);
 			assert(a_n > 0);
 			auto delta = a_p->f_delta(a_i, a_n);
 			auto p = a_p->f_values();
 			auto q = p + a_i;
-			f_destruct(q, q + a_n);
-			auto r = f_values() + this->v_size;
+			std::destroy(q, q + a_n);
+			auto r = f_values() + v_size;
 			f_move(q + a_n, p + a_p->v_size, f_move(p, q, r));
-			this->v_size += a_p->v_size - a_n;
+			v_size += a_p->v_size - a_n;
 			auto d = T_traits::f_index(0, r[-1]);
 			f_add(r, r + a_i, d);
-			f_add(r + a_i, f_values() + this->v_size, d - delta);
+			f_add(r + a_i, f_values() + v_size, d - delta);
 			return delta;
 		}
 		t_delta f_merge(size_t a_i, size_t a_n, t_leaf* a_p)
@@ -259,14 +258,14 @@ class t_array : public t_tree<T_traits, A_branch>
 			assert(a_n > 0);
 			auto delta = f_delta(a_i, a_n);
 			auto p = f_values() + a_i;
-			f_destruct(p, p + a_n);
-			this->v_size -= a_n;
-			auto q = f_values() + this->v_size;
+			std::destroy(p, p + a_n);
+			v_size -= a_n;
+			auto q = f_values() + v_size;
 			auto r = a_p->f_values();
 			f_move(r, r + a_p->v_size, f_unshift(p, q, a_n));
 			f_add(p, q, -delta);
-			if (this->v_size > 0) f_add(q, q + a_p->v_size, T_traits::f_index(0, q[-1]));
-			this->v_size += a_p->v_size;
+			if (v_size > 0) f_add(q, q + a_p->v_size, T_traits::f_index(0, q[-1]));
+			v_size += a_p->v_size;
 			return delta;
 		}
 	};
@@ -287,7 +286,7 @@ class t_array : public t_tree<T_traits, A_branch>
 			delete p;
 		} else {
 			auto p = static_cast<t_leaf*>(a_node);
-			f_destruct(p->f_values(), p->f_values() + p->v_size);
+			std::destroy_n(p->f_values(), p->v_size);
 			delete p;
 		}
 	}
@@ -1057,8 +1056,8 @@ typename t_array<T_value, A_leaf, A_branch, T_traits>::t_at t_array<T_value, A_l
 	q->v_indices[j] -= delta;
 	delta += dj;
 	this->v_size -= delta;
-	f_destruct(v, v + a);
-	f_destruct(w, w + a_j);
+	std::destroy(v, v + a);
+	std::destroy(w, w + a_j);
 	size_t b = a_q->v_size - a_j;
 	size_t m = a_i + b;
 	if (m >= A_leaf / 2 * 2) {

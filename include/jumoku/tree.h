@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <cassert>
 
 namespace jumoku
@@ -15,27 +16,11 @@ inline T* f_construct(T* a_p, U&& a_x)
 }
 
 template<typename T>
-inline T* f_destruct(T* a_p)
-{
-	a_p->~T();
-	return a_p;
-}
-
-template<typename T>
-inline void f_destruct(T* a_i, T* a_j)
-{
-	while (a_i != a_j) {
-		f_destruct(a_i);
-		++a_i;
-	}
-}
-
-template<typename T>
 inline void f_move(T* a_p, T* a_q)
 {
 	assert(a_p != a_q);
 	f_construct(a_p, std::move(*a_q));
-	f_destruct(a_q);
+	std::destroy_at(a_q);
 }
 
 template<typename T>
@@ -143,28 +128,28 @@ protected:
 		}
 		void f_insert(size_t a_i, const t_index& a_index, const t_index& a_delta, void* a_node, bool a_right)
 		{
-			auto p = v_nodes + this->v_size + 1;
+			auto p = v_nodes + v_size + 1;
 			*f_shift(v_nodes + a_i + (a_right ? 1 : 0), p, 1) = a_node;
 			{
 				auto p = v_indices + a_i;
-				auto q = v_indices + this->v_size;
+				auto q = v_indices + v_size;
 				f_copy_backward(p, q, q + 1, a_delta);
 				*p = a_index;
 			}
-			++this->v_size;
+			++v_size;
 		}
 		void f_erase(size_t a_i, const t_index& a_delta)
 		{
-			f_unshift(v_nodes + a_i + 1, v_nodes + this->v_size, 1);
+			f_unshift(v_nodes + a_i + 1, v_nodes + v_size, 1);
 			auto p = v_indices + a_i;
-			f_copy_forward(p + 1, v_indices + this->v_size, p, -a_delta);
-			--this->v_size;
+			f_copy_forward(p + 1, v_indices + v_size, p, -a_delta);
+			--v_size;
 		}
 		void f_erase(const t_index& a_base, t_index& a_index, t_branch* a_p, size_t a_i, const t_index& a_delta)
 		{
 			auto p = a_p->v_nodes;
-			*f_shift(p, p + a_i + 1, 1) = v_nodes[this->v_size];
-			auto index = a_base + v_indices[--this->v_size];
+			*f_shift(p, p + a_i + 1, 1) = v_nodes[v_size];
+			auto index = a_base + v_indices[--v_size];
 			auto delta = a_index - index;
 			a_index = index;
 			{
@@ -199,7 +184,7 @@ protected:
 			auto p = a_p->v_nodes;
 			auto i = std::copy(p, p + a_i + 1, v_nodes + A_size / 2 + 1);
 			std::copy(p + a_i + 2, p + A_size / 2 + 1, i);
-			this->v_size = A_size / 2 * 2;
+			v_size = A_size / 2 * 2;
 			auto delta = a_index - a_base;
 			{
 				auto p = v_indices + A_size / 2;
@@ -214,7 +199,7 @@ protected:
 			f_unshift(v_nodes + a_i + 1, v_nodes + A_size / 2, 1);
 			auto q = a_p->v_nodes;
 			std::copy(q, q + A_size / 2 + 1, v_nodes + A_size / 2);
-			this->v_size = A_size / 2 * 2;
+			v_size = A_size / 2 * 2;
 			auto delta = a_index - a_base - a_delta;
 			{
 				auto p = v_indices + a_i;
