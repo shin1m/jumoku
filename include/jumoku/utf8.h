@@ -9,45 +9,45 @@ namespace jumoku
 template<typename T>
 struct t_utf8_index
 {
-	T v_i0;
-	T v_i1;
+	T v_byte;
+	T v_character;
 
 	template<typename U>
 	operator t_utf8_index<U>() const
 	{
-		return {U(v_i0), U(v_i1)};
+		return {U(v_byte), U(v_character)};
 	}
 	t_utf8_index<int> operator-() const
 	{
-		return {-int(v_i0), -int(v_i1)};
+		return {-int(v_byte), -int(v_character)};
 	}
 	bool operator==(const t_utf8_index& a_x) const
 	{
-		return v_i0 == a_x.v_i0 && v_i1 == a_x.v_i1;
+		return v_byte == a_x.v_byte && v_character == a_x.v_character;
 	}
 	template<typename U>
 	t_utf8_index& operator+=(const t_utf8_index<U>& a_x)
 	{
-		v_i0 += a_x.v_i0;
-		v_i1 += a_x.v_i1;
+		v_byte += a_x.v_byte;
+		v_character += a_x.v_character;
 		return *this;
 	}
 	template<typename U>
 	t_utf8_index& operator-=(const t_utf8_index<U>& a_x)
 	{
-		v_i0 -= a_x.v_i0;
-		v_i1 -= a_x.v_i1;
+		v_byte -= a_x.v_byte;
+		v_character -= a_x.v_character;
 		return *this;
 	}
 	template<typename U>
 	t_utf8_index operator+(const t_utf8_index<U>& a_x) const
 	{
-		return {v_i0 + T(a_x.v_i0), v_i1 + T(a_x.v_i1)};
+		return {v_byte + T(a_x.v_byte), v_character + T(a_x.v_character)};
 	}
 	template<typename U>
 	t_utf8_index operator-(const t_utf8_index<U>& a_x) const
 	{
-		return {v_i0 - T(a_x.v_i0), v_i1 - T(a_x.v_i1)};
+		return {v_byte - T(a_x.v_byte), v_character - T(a_x.v_character)};
 	}
 };
 
@@ -59,14 +59,14 @@ struct t_utf8_traits
 	{
 		constexpr size_t operator()(const t_index& a_index) const
 		{
-			return a_index.v_i0;
+			return a_index.v_byte;
 		}
 	};
 	struct t_in_characters
 	{
 		constexpr size_t operator()(const t_index& a_index) const
 		{
-			return a_index.v_i1;
+			return a_index.v_character;
 		}
 	};
 
@@ -256,7 +256,7 @@ public:
 		}
 
 	public:
-		using difference_type = std::ptrdiff_t;
+		using difference_type = ptrdiff_t;
 		using value_type = uint8_t;
 		using pointer = const uint8_t*;
 		using reference = const uint8_t&;
@@ -386,7 +386,7 @@ public:
 		size_t i = a_first.v_p - a_first.v_leaf->v_data;
 		if (i + n > a_first.v_leaf->v_size) {
 			n = a_first.v_leaf->v_size - i;
-			size_t index = a_first.v_index.v_i0 + n;
+			size_t index = use(a_first.v_index) + n;
 			at = f_at({index}, path, use);
 			auto tail = path + this->v_depth - 2;
 			size_t j = a_last.v_p - a_last.v_leaf->v_data;

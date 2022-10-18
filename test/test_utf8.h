@@ -12,7 +12,7 @@ namespace std
 
 string to_string(const jumoku::t_utf8_traits::t_index& a_x)
 {
-	return '(' + to_string(a_x.v_i0) + ", " + to_string(a_x.v_i1) + ')';
+	return '(' + to_string(a_x.v_byte) + ", " + to_string(a_x.v_character) + ')';
 }
 
 }

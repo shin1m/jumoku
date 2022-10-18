@@ -326,7 +326,7 @@ public:
 		}
 
 	public:
-		using difference_type = std::ptrdiff_t;
+		using difference_type = ptrdiff_t;
 		using value_type = std::remove_const_t<T>;
 		using pointer = T*;
 		using reference = T&;
