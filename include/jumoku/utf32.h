@@ -78,6 +78,10 @@ public:
 		v_i = a_x.v_i;
 		return *this;
 	}
+	T f_base() const
+	{
+		return v_i;
+	}
 	bool operator==(const t_utf32_iterator& a_x) const
 	{
 		return v_i == a_x.v_i;
@@ -92,6 +96,10 @@ public:
 		{
 			return *++i;
 		});
+	}
+	size_t f_index() const
+	{
+		return v_i.f_index().v_character;
 	}
 	t_utf32_iterator& operator++()
 	{
@@ -245,6 +253,10 @@ public:
 		v_i = a_x.v_i;
 		v_low = a_x.v_low;
 		return *this;
+	}
+	T f_base() const
+	{
+		return v_i;
 	}
 	bool operator==(const t_utf16_iterator& a_x) const
 	{
