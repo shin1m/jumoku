@@ -12,7 +12,7 @@ namespace jumoku
 template<typename T, typename U>
 inline T* f_construct(T* a_p, U&& a_x)
 {
-	return new (static_cast<void*>(a_p)) T(std::forward<U>(a_x));
+	return new(static_cast<void*>(a_p)) T(std::forward<U>(a_x));
 }
 
 template<typename T>

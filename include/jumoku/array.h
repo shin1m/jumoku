@@ -539,8 +539,8 @@ public:
 		}
 		return {f_erase_leaf(path, path + this->v_depth - 1, at, n), a_first.v_index};
 	}
-	template<typename T_use>
-	t_mutable_iterator f_at(size_t a_index, T_use a_use)
+	template<typename T_use = typename T_traits::t_default>
+	t_mutable_iterator f_at(size_t a_index, T_use a_use = {})
 	{
 		if (a_index >= a_use(this->v_size)) return f_end();
 		t_at i{this->v_root, a_index};
@@ -553,18 +553,10 @@ public:
 		if (i.v_index > 0) index += T_traits::f_index(i.v_index, static_cast<t_leaf*>(i.v_node)->f_values()[i.v_index - 1]);
 		return {i, index};
 	}
-	template<typename T_use>
-	t_constant_iterator f_at(size_t a_index, T_use a_use) const
+	template<typename T_use = typename T_traits::t_default>
+	t_constant_iterator f_at(size_t a_index, T_use a_use = {}) const
 	{
 		return const_cast<t_array*>(this)->f_at(a_index, a_use);
-	}
-	t_mutable_iterator f_at(size_t a_index)
-	{
-		return f_at(a_index, typename T_traits::t_default());
-	}
-	t_constant_iterator f_at(size_t a_index) const
-	{
-		return const_cast<t_array*>(this)->f_at(a_index);
 	}
 };
 

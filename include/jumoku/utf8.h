@@ -247,7 +247,7 @@ public:
 	{
 		friend class t_utf8;
 
-		uint8_t* v_p;
+		const uint8_t* v_p;
 		t_leaf* v_leaf;
 		t_index v_index;
 
@@ -281,9 +281,13 @@ public:
 		{
 			return !(*this == a_x);
 		}
-		uint8_t operator*() const
+		const uint8_t& operator*() const
 		{
 			return *v_p;
+		}
+		const uint8_t* f_tail() const
+		{
+			return v_leaf->v_data + v_leaf->v_size;
 		}
 		const t_index& f_index() const
 		{
@@ -296,7 +300,7 @@ public:
 		t_iterator& operator++()
 		{
 			v_index += f_delta();
-			if (++v_p == v_leaf->v_data + v_leaf->v_size) {
+			if (++v_p >= f_tail()) {
 				v_leaf = v_leaf->v_next;
 				v_p = v_leaf->v_data;
 			}
@@ -310,9 +314,9 @@ public:
 		}
 		t_iterator& operator--()
 		{
-			if (v_p == v_leaf->v_data) {
+			if (v_p <= v_leaf->v_data) {
 				v_leaf = v_leaf->v_previous;
-				v_p = v_leaf->v_data + v_leaf->v_size;
+				v_p = f_tail();
 			}
 			--v_p;
 			v_index -= f_delta();
@@ -434,8 +438,8 @@ public:
 		}
 		return {f_erase_leaf(path, path + this->v_depth - 1, at, n), a_first.v_index};
 	}
-	template<typename T_use>
-	t_iterator f_at(size_t a_index, T_use a_use) const
+	template<typename T_use = t_utf8_traits::t_in_bytes>
+	t_iterator f_at(size_t a_index, T_use a_use = {}) const
 	{
 		if (a_index >= a_use(this->v_size)) return f_end();
 		t_at i{this->v_root, a_index};
@@ -445,10 +449,6 @@ public:
 			if (p.v_index > 0) index += p.v_node->v_indices[p.v_index - 1];
 		}
 		return {i, index + f_finalize(a_use, i)};
-	}
-	t_iterator f_at(size_t a_index) const
-	{
-		return f_at(a_index, t_utf8_traits::t_in_bytes());
 	}
 };
 
