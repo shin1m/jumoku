@@ -9,29 +9,26 @@
 namespace jumoku
 {
 
-template<typename T, typename U>
-inline T* f_construct(T* a_p, U&& a_x)
+template<typename T>
+inline T* f_construct(T* a_p, auto&& a_x)
 {
-	return new(static_cast<void*>(a_p)) T(std::forward<U>(a_x));
+	return new(static_cast<void*>(a_p)) T(std::forward<decltype(a_x)>(a_x));
 }
 
-template<typename T>
-inline void f_move(T* a_p, T* a_q)
+inline void f_move(auto* a_p, auto* a_q)
 {
 	assert(a_p != a_q);
 	f_construct(a_p, std::move(*a_q));
 	std::destroy_at(a_q);
 }
 
-template<typename T>
-inline T* f_move(T* a_i, T* a_j, T* a_p)
+inline auto f_move(auto* a_i, auto* a_j, auto* a_p)
 {
 	while (a_i != a_j) f_move(a_p++, a_i++);
 	return a_p;
 }
 
-template<typename T>
-inline T* f_shift(T* a_i, T* a_j, size_t a_n)
+inline auto f_shift(auto* a_i, auto* a_j, size_t a_n)
 {
 	while (a_j != a_i) {
 		--a_j;
@@ -40,8 +37,7 @@ inline T* f_shift(T* a_i, T* a_j, size_t a_n)
 	return a_j;
 }
 
-template<typename T>
-inline T* f_unshift(T* a_i, T* a_j, size_t a_n)
+inline auto f_unshift(auto* a_i, auto* a_j, size_t a_n)
 {
 	while (a_i != a_j) {
 		f_move(a_i, a_i + a_n);
@@ -220,8 +216,7 @@ protected:
 		void* v_node;
 		size_t v_index;
 
-		template<typename T_use>
-		t_via f_step(T_use a_use)
+		t_via f_step(auto a_use)
 		{
 			auto p = static_cast<t_branch*>(v_node);
 			size_t i = std::upper_bound(p->v_indices, p->v_indices + p->v_size, v_index, [&a_use](size_t a_x, const t_index& a_y)
@@ -254,11 +249,10 @@ protected:
 	}
 	t_via* f_insert_branch(t_via* a_head, t_via* a_tail, t_index a_index, const t_index& a_delta, void* a_node, bool a_put_right, bool a_get_right);
 	t_via* f_erase_branch(t_via* a_head, t_via* a_tail, const t_index& a_delta);
-	template<typename T_use>
-	t_at f_at(const t_index& a_index, t_via* a_path, T_use a_use) const
+	t_at f_at(const t_index& a_index, t_via* a_path, auto a_use) const
 	{
 		t_at i{v_root, a_use(a_index)};
-		for (size_t n = v_depth; --n > 0;) *a_path++ = i.f_step(std::forward<T_use>(a_use));
+		for (size_t n = v_depth; --n > 0;) *a_path++ = i.f_step(std::forward<decltype(a_use)>(a_use));
 		return i;
 	}
 	void f_dump(size_t a_level, void* a_node, const std::function<void(size_t, const t_index&)>& a_dump) const

@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.10)
-project(jumoku VERSION 202102)
+cmake_minimum_required(VERSION 3.12)
+project(jumoku VERSION 202306)
 add_library(jumoku INTERFACE)
-target_compile_features(jumoku INTERFACE cxx_std_17)
+target_compile_features(jumoku INTERFACE cxx_std_20)
 target_include_directories(jumoku INTERFACE
 	"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>/include"
 	"$<INSTALL_INTERFACE:include/jumoku>"

@@ -30,8 +30,8 @@ std::string f_dump(const jumoku::t_utf8<A_leaf, A_branch>& a_utf8)
 	return s;
 }
 
-template<size_t A_leaf, size_t A_branch, typename T>
-void f_assert_equals(const jumoku::t_utf8<A_leaf, A_branch>& a0, const T& a1)
+template<size_t A_leaf, size_t A_branch>
+void f_assert_equals(const jumoku::t_utf8<A_leaf, A_branch>& a0, const auto& a1)
 {
 	assert(a0.f_size() == std::accumulate(a1.begin(), a1.end(), jumoku::t_utf8_traits::t_index{}, [](auto a_x, auto a_y)
 	{
@@ -55,8 +55,8 @@ std::vector<uint8_t> f_range(uint8_t a_i, size_t a_n)
 	return vector;
 }
 
-template<size_t A_leaf, size_t A_branch, typename T_iterator>
-void f_test_insert_range(jumoku::t_utf8<A_leaf, A_branch>& a0, std::vector<uint8_t>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
+template<size_t A_leaf, size_t A_branch>
+void f_test_insert_range(jumoku::t_utf8<A_leaf, A_branch>& a0, std::vector<uint8_t>& a1, size_t a_i, auto a_first, auto a_last)
 {
 	auto i = a0.f_insert(a0.f_at(a_i), a_first, a_last);
 	assert(std::equal(a_first, a_last, i));
@@ -64,8 +64,8 @@ void f_test_insert_range(jumoku::t_utf8<A_leaf, A_branch>& a0, std::vector<uint8
 	f_assert_equals(a0, a1);
 }
 
-template<size_t A_leaf, size_t A_branch, typename T>
-void f_test_insert_range(jumoku::t_utf8<A_leaf, A_branch>& a0, std::vector<uint8_t>& a1, size_t a_i, const T& a_values)
+template<size_t A_leaf, size_t A_branch>
+void f_test_insert_range(jumoku::t_utf8<A_leaf, A_branch>& a0, std::vector<uint8_t>& a1, size_t a_i, const auto& a_values)
 {
 	f_test_insert_range(a0, a1, a_i, a_values.begin(), a_values.end());
 }

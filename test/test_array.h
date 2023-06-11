@@ -20,8 +20,8 @@ std::string f_dump(const jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a
 	return s;
 }
 
-template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T>
-void f_assert_equals(const jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, const T& a1)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
+void f_assert_equals(const jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, const auto& a1)
 {
 	assert(a0.f_size() == std::accumulate(a1.begin(), a1.end(), typename T_traits::t_index{}, [](auto a_x, auto a_y)
 	{
@@ -45,8 +45,8 @@ std::vector<int> f_range(int a_i, size_t a_n)
 	return vector;
 }
 
-template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T_iterator>
-void f_test_insert(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
+void f_test_insert(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, auto a_first, auto a_last)
 {
 	a1.insert(a1.begin() + a_i, a_first, a_last);
 	for (auto i = a0.f_at(a_i); a_first != a_last; ++a_first) {
@@ -57,8 +57,8 @@ void f_test_insert(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std
 	f_assert_equals(a0, a1);
 }
 
-template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T>
-void f_test_insert(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
+void f_test_insert(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, const auto& a_values)
 {
 	f_test_insert(a0, a1, a_i, a_values.begin(), a_values.end());
 }
@@ -81,8 +81,8 @@ void f_test_erase(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std:
 	f_assert_equals(a0, a1);
 }
 
-template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T_iterator>
-void f_test_insert_range(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, T_iterator a_first, T_iterator a_last)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
+void f_test_insert_range(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, auto a_first, auto a_last)
 {
 	auto i = a0.f_insert(a0.f_at(a_i), a_first, a_last);
 	assert(std::equal(a_first, a_last, i));
@@ -90,8 +90,8 @@ void f_test_insert_range(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a
 	f_assert_equals(a0, a1);
 }
 
-template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits, typename T>
-void f_test_insert_range(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, const T& a_values)
+template<typename T_value, size_t A_leaf, size_t A_branch, typename T_traits>
+void f_test_insert_range(jumoku::t_array<T_value, A_leaf, A_branch, T_traits>& a0, std::vector<T_value>& a1, size_t a_i, const auto& a_values)
 {
 	f_test_insert_range(a0, a1, a_i, a_values.begin(), a_values.end());
 }

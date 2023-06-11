@@ -121,8 +121,7 @@ class t_utf8 : public t_tree<t_utf8_traits, A_branch>
 			this->v_previous = a_p->v_previous;
 			a_p->v_previous = this->v_previous->v_next = this;
 		}
-		template<typename T>
-		t_leaf(t_leaf* a_p, T a_first, size_t a_n) : t_leaf(a_p, a_n)
+		t_leaf(t_leaf* a_p, auto a_first, size_t a_n) : t_leaf(a_p, a_n)
 		{
 			std::uninitialized_copy_n(a_first, a_n, v_data);
 		}
@@ -132,8 +131,7 @@ class t_utf8 : public t_tree<t_utf8_traits, A_branch>
 			this->v_next->v_previous = this->v_previous;
 			delete this;
 		}
-		template<typename T>
-		t_delta f_insert(size_t a_i, T a_first, size_t a_n)
+		t_delta f_insert(size_t a_i, auto a_first, size_t a_n)
 		{
 			assert(a_n > 0);
 			std::uninitialized_copy_n(a_first, a_n, f_shift(v_data + a_i, v_data + v_size, a_n));
@@ -219,8 +217,7 @@ class t_utf8 : public t_tree<t_utf8_traits, A_branch>
 			delete static_cast<t_leaf*>(a_node);
 		}
 	}
-	template<typename T>
-	t_at f_insert_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, T a_first, size_t a_n);
+	t_at f_insert_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, auto a_first, size_t a_n);
 	t_at f_erase_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, size_t a_n);
 	t_at f_merge_leaf(t_via* a_head, t_via* a_tail, t_leaf* a_p, size_t a_i);
 	t_at f_merge_leaf(t_via* a_head, t_via* a_tail, t_leaf* a_p, size_t a_i, t_leaf* a_q, size_t a_j);
@@ -355,8 +352,7 @@ public:
 	{
 		return {{const_cast<t_link*>(&v_link), 0}, this->v_size};
 	}
-	template<typename T>
-	t_iterator f_insert(t_iterator a_i, T a_first, T a_last)
+	t_iterator f_insert(t_iterator a_i, auto a_first, auto a_last)
 	{
 		size_t n = a_last - a_first;
 		if (n <= 0) return {{a_i.v_leaf, size_t(a_i.v_p - a_i.v_leaf->v_data)}, a_i.v_index};
@@ -453,8 +449,7 @@ public:
 };
 
 template<size_t A_leaf, size_t A_branch>
-template<typename T>
-typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_insert_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, T a_first, size_t a_n)
+typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_insert_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, auto a_first, size_t a_n)
 {
 	assert(a_n > 0);
 	// |= N  =| |= N =| |= N  =|

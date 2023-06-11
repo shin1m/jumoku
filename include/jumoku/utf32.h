@@ -19,8 +19,7 @@ struct t_utf32_traits
 		if (a_c < 0xfe) return 6;
 		return 0;
 	}
-	template<typename T>
-	static wchar_t f_decode(wchar_t a_c, T a_next)
+	static wchar_t f_decode(wchar_t a_c, auto a_next)
 	{
 		auto d = f_delta(a_c);
 		assert(d > 0);
@@ -32,8 +31,7 @@ struct t_utf32_traits
 		} while (--d > 1);
 		return a_c;
 	}
-	template<typename T_put>
-	static void f_encode(wchar_t a_c, T_put a_put)
+	static void f_encode(wchar_t a_c, auto a_put)
 	{
 		if (a_c < L'\u0080') {
 			a_put(a_c);
