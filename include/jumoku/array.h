@@ -333,10 +333,6 @@ public:
 		{
 			return v_p == a_x.v_p;
 		}
-		bool operator!=(const t_iterator& a_x) const
-		{
-			return !(*this == a_x);
-		}
 		decltype(T_traits::f_get(v_p, v_p)) operator*() const
 		{
 			return T_traits::f_get(v_leaf->f_values(), v_p);

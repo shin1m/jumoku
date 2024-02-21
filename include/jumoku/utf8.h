@@ -274,10 +274,6 @@ public:
 		{
 			return v_p == a_x.v_p;
 		}
-		bool operator!=(const t_iterator& a_x) const
-		{
-			return !(*this == a_x);
-		}
 		const uint8_t& operator*() const
 		{
 			return *v_p;

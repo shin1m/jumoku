@@ -84,10 +84,6 @@ public:
 	{
 		return v_i == a_x.v_i;
 	}
-	bool operator!=(const t_utf32_iterator& a_x) const
-	{
-		return !(*this == a_x);
-	}
 	wchar_t operator*() const
 	{
 		return t_utf32_traits::f_decode(*v_i, [i = v_i]() mutable
@@ -259,10 +255,6 @@ public:
 	bool operator==(const t_utf16_iterator& a_x) const
 	{
 		return v_i == a_x.v_i && v_low == a_x.v_low;
-	}
-	bool operator!=(const t_utf16_iterator& a_x) const
-	{
-		return !(*this == a_x);
 	}
 	wchar_t operator*() const
 	{
