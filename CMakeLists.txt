@@ -8,8 +8,8 @@ target_include_directories(jumoku INTERFACE
 	)
 enable_testing()
 add_subdirectory(test)
-install(TARGETS jumoku EXPORT jumoku-targets DESTINATION lib)
 install(DIRECTORY include/jumoku DESTINATION include/jumoku)
+install(TARGETS jumoku EXPORT jumoku-targets DESTINATION lib)
 install(EXPORT jumoku-targets FILE jumoku-targets.cmake DESTINATION lib/cmake/jumoku-${jumoku_VERSION})
 include(CMakePackageConfigHelpers)
 configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in"
