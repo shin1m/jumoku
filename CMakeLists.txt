@@ -4,11 +4,11 @@ add_library(jumoku INTERFACE)
 target_compile_features(jumoku INTERFACE cxx_std_20)
 target_include_directories(jumoku INTERFACE
 	"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>/include"
-	"$<INSTALL_INTERFACE:include/jumoku>"
+	"$<INSTALL_INTERFACE:include>"
 	)
 enable_testing()
 add_subdirectory(test)
-install(DIRECTORY include/jumoku DESTINATION include/jumoku)
+install(DIRECTORY include/jumoku DESTINATION include)
 install(TARGETS jumoku EXPORT jumoku-targets DESTINATION lib)
 install(EXPORT jumoku-targets FILE jumoku-targets.cmake DESTINATION lib/cmake/jumoku-${jumoku_VERSION})
 include(CMakePackageConfigHelpers)
