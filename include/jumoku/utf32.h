@@ -39,8 +39,8 @@ struct t_utf32_traits
 			auto d =
 				a_c < L'\u0800' ? 1 :
 				a_c < L'\U00010000' ? 2 :
-				a_c < L'\U00200000' ? 3 :
-				a_c < L'\U04000000' ? 4 :
+				a_c < wchar_t(0x200000) ? 3 :
+				a_c < wchar_t(0x4000000) ? 4 :
 				5;
 			auto s = d * 6;
 			a_put(a_c >> s | int8_t(0x80) >> d);
