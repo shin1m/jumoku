@@ -295,8 +295,7 @@ typename t_tree<t_index, A_size>::t_via* t_tree<t_index, A_size>::f_insert_branc
 		*a_tail = {static_cast<t_branch*>(v_root), a_get_right ? 1u : 0u};
 		return ++a_tail;
 	}
-	auto p = (--a_tail)->v_node;
-	size_t i = a_tail->v_index;
+	auto [p, i] = *--a_tail;
 	if (i > 0) a_index += p->v_indices[i - 1];
 	if (p->v_size < A_size) {
 		p->f_insert(i, a_index, a_delta, a_node, a_put_right);
@@ -344,8 +343,7 @@ typename t_tree<t_index, A_size>::t_via* t_tree<t_index, A_size>::f_insert_branc
 template<typename t_index, size_t A_size>
 typename t_tree<t_index, A_size>::t_via* t_tree<t_index, A_size>::f_erase_branch(t_via* a_head, t_via* a_tail, const t_index& a_delta)
 {
-	auto p = (--a_tail)->v_node;
-	size_t i = a_tail->v_index;
+	auto [p, i] = *--a_tail;
 	if (a_head == a_tail) {
 		if (p->v_size > 1) {
 			p->f_erase(i, a_delta);
@@ -362,8 +360,7 @@ typename t_tree<t_index, A_size>::t_via* t_tree<t_index, A_size>::f_erase_branch
 		*a_tail = {p, i};
 		return ++a_tail;
 	}
-	auto q = a_tail[-1].v_node;
-	size_t j = a_tail[-1].v_index;
+	auto [q, j] = a_tail[-1];
 	if (j > 0) {
 		auto r = static_cast<t_branch*>(q->v_nodes[j - 1]);
 		if (r->v_size > A_size / 2) {

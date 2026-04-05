@@ -421,8 +421,8 @@ public:
 			while (p->v_index <= 0) --p;
 			--p->v_index;
 			while (p != tail) {
-				auto q = p->v_node->v_nodes[p->v_index];
-				*++p = {static_cast<t_branch*>(q), static_cast<t_branch*>(q)->v_size};
+				auto q = static_cast<t_branch*>(p->v_node->v_nodes[p->v_index]);
+				*++p = {q, q->v_size};
 			}
 			at = {a_first.v_leaf, i};
 		} else {
@@ -516,14 +516,11 @@ typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_insert_leaf(
 	size_t ii = i;
 	size_t ni = p->v_size - i;
 	if (a_head != a_tail) {
-		auto q = a_tail[-1].v_node;
-		size_t j = a_tail[-1].v_index;
 		// if n0 exists
-		if (j > 0) {
-			auto r = p->v_previous;
-			assert(r->v_size > 0);
+		if (auto [q, j] = a_tail[-1]; j > 0) {
 			// if n0 + i < N
-			if (r->v_size + i < A_leaf) {
+			if (auto r = p->v_previous; r->v_size + i < A_leaf) {
+				assert(r->v_size > 0);
 				// |=  N   =| ? |=    N    =| ...
 				// |=n0+i=|.| ? |.i.|=n-i=|.| ...
 				// l = {node: n0, index: n0 + i}
@@ -643,43 +640,36 @@ typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_insert_leaf(
 	// N < i' + m' + n - i <= N * 2
 	size_t k = ii + a_n + ni;
 	// if n1 exists && i' + m' + n - i + n1 <= N * 2
-	if (a_head != a_tail) {
-		auto q = a_tail[-1].v_node;
-		size_t j = a_tail[-1].v_index;
-		if (j < q->v_size) {
-			auto r = p->v_next;
-			if (k + r->v_size <= A_leaf * 2) {
-				auto w = r->v_data;
-				size_t d = k - A_leaf;
-				assert(d > 0);
-				f_shift(w, w + r->v_size, d);
-				t_delta delta;
-				if (ii + a_n <= A_leaf) {
-					// |=  N   =| |=  N   =|
-					// |=i'=|*|=n-i=|=n1=|.|
-					size_t e = p->v_size - d;
-					f_move(v + e, v + p->v_size, w);
-					f_shift(v + i, v + e, ii + a_n - i);
-					auto q = std::uninitialized_copy_n(a_first, a_n, v + ii);
-					delta = p->f_delta(ii, a_n);
-				} else {
-					// |= N  =| |=     N      =|
-					// |=i'=|*****|=n-i=|=n1=|.|
-					size_t e = A_leaf - ii;
-					size_t f = a_n - e;
-					f_move(v + i, v + p->v_size, w + f);
-					std::uninitialized_copy_n(a_first, e, v + ii);
-					std::uninitialized_copy_n(a_first + e, f, w);
-					delta = p->f_delta(ii, e) + r->f_delta(0, f);
-				}
-				p->v_size = A_leaf;
-				r->v_size += d;
-				q->v_indices[j] -= r->f_delta(0, d);
-				this->f_adjust(a_head, a_tail, delta);
-				this->v_size += delta;
-				return l;
-			}
+	if (a_head != a_tail) if (auto [q, j] = a_tail[-1]; j < q->v_size) if (auto r = p->v_next; k + r->v_size <= A_leaf * 2) {
+		auto w = r->v_data;
+		size_t d = k - A_leaf;
+		assert(static_cast<int>(d) > 0);
+		f_shift(w, w + r->v_size, d);
+		t_delta delta;
+		if (ii + a_n <= A_leaf) {
+			// |=  N   =| |=  N   =|
+			// |=i'=|*|=n-i=|=n1=|.|
+			size_t e = p->v_size - d;
+			f_move(v + e, v + p->v_size, w);
+			f_shift(v + i, v + e, ii + a_n - i);
+			auto q = std::uninitialized_copy_n(a_first, a_n, v + ii);
+			delta = p->f_delta(ii, a_n);
+		} else {
+			// |= N  =| |=     N      =|
+			// |=i'=|*****|=n-i=|=n1=|.|
+			size_t e = A_leaf - ii;
+			size_t f = a_n - e;
+			f_move(v + i, v + p->v_size, w + f);
+			std::uninitialized_copy_n(a_first, e, v + ii);
+			std::uninitialized_copy_n(a_first + e, f, w);
+			delta = p->f_delta(ii, e) + r->f_delta(0, f);
 		}
+		p->v_size = A_leaf;
+		r->v_size += d;
+		q->v_indices[j] -= r->f_delta(0, d);
+		this->f_adjust(a_head, a_tail, delta);
+		this->v_size += delta;
+		return l;
 	}
 	// |= N =| |= N  =|
 	// |=i'=|*|=n-i=|.|
@@ -745,11 +735,9 @@ typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_erase_leaf(t
 		return i < p->v_size ? t_at{p, i} : t_at{p->v_next, 0};
 	}
 	size_t n = A_leaf / 2 + a_n - p->v_size;
-	auto q = a_tail[-1].v_node;
-	size_t j = a_tail[-1].v_index;
+	auto [q, j] = a_tail[-1];
 	if (j > 0) {
-		auto r = p->v_previous;
-		if (r->v_size - n >= A_leaf / 2) {
+		if (auto r = p->v_previous; r->v_size - n >= A_leaf / 2) {
 			auto delta = r->f_erase(p, n, i, a_n);
 			q->v_indices[j - 1] -= p->f_delta(0, n);
 			this->f_adjust(a_head, a_tail, -delta);
@@ -767,8 +755,7 @@ typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_erase_leaf(t
 			return i < r->v_size ? t_at{r, i} : t_at{r->v_next, 0};
 		}
 	}
-	auto r = p->v_next;
-	if (r->v_size - n >= A_leaf / 2) {
+	if (auto r = p->v_next; r->v_size - n >= A_leaf / 2) {
 		auto size = r->f_delta(0, n);
 		auto delta = p->f_erase(i, a_n, n, r);
 		q->v_indices[j] += size;
@@ -787,14 +774,12 @@ template<size_t A_leaf, size_t A_branch>
 typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_merge_leaf(t_via* a_head, t_via* a_tail, t_leaf* a_p, size_t a_i)
 {
 	size_t n = A_leaf / 2 - a_p->v_size;
-	assert(n > 0);
+	assert(static_cast<int>(n) > 0);
 	auto v = a_p->v_data;
-	auto q = a_tail[-1].v_node;
-	size_t j = a_tail[-1].v_index;
+	auto [q, j] = a_tail[-1];
 	if (j > 0) {
-		auto r = a_p->v_previous;
-		assert(r->v_size > 0);
-		if (r->v_size - n >= A_leaf / 2) {
+		if (auto r = a_p->v_previous; r->v_size - n >= A_leaf / 2) {
+			assert(r->v_size > 0);
 			r->v_size -= n;
 			a_p->v_size = A_leaf / 2;
 			auto w = r->v_data + r->v_size;
@@ -836,13 +821,12 @@ typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_merge_leaf(t
 {
 	auto v = a_p->v_data + a_i;
 	size_t a = a_p->v_size - a_i;
-	assert(a > 0);
+	assert(static_cast<int>(a) > 0);
 	auto delta = a_p->f_delta(a_i, a);
 	auto w = a_q->v_data;
 	assert(a_j > 0);
-	auto q = a_tail->v_node;
-	size_t j = a_tail->v_index - 1;
-	q->v_indices[j] -= delta;
+	auto& index = a_tail->v_node->v_indices[a_tail->v_index - 1];
+	index -= delta;
 	delta += a_q->f_delta(0, a_j);
 	this->v_size -= delta;
 	size_t b = a_q->v_size - a_j;
@@ -853,7 +837,7 @@ typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_merge_leaf(t
 			a_p->v_size = A_leaf / 2;
 			a_q->v_size = m - A_leaf / 2;
 			size_t d = A_leaf / 2 - a_i;
-			q->v_indices[j] += a_q->f_delta(a_j, d);
+			index += a_q->f_delta(a_j, d);
 			size_t jd = a_j + d;
 			f_move(w + a_j, w + jd, v);
 			f_unshift(w, w + a_q->v_size, jd);
@@ -865,7 +849,7 @@ typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_merge_leaf(t
 			size_t d = A_leaf / 2 - b;
 			auto ww = f_move(a_p->v_data + a_p->v_size, v, w);
 			if (a_j > d) f_unshift(ww, w + a_q->v_size, a_j - d);
-			q->v_indices[j] -= a_q->f_delta(0, d);
+			index -= a_q->f_delta(0, d);
 			return b > 0 ? t_at{a_q, d} : t_at{a_q->v_next, 0};
 		}
 		a_p->v_size = a_i;
@@ -875,8 +859,7 @@ typename t_utf8<A_leaf, A_branch>::t_at t_utf8<A_leaf, A_branch>::f_merge_leaf(t
 	}
 	a_p->v_size = m;
 	f_move(w + a_j, w + a_j + b, v);
-	if (b > 0) q->v_indices[j] += a_p->f_delta(a_i, b);
-	a_tail->v_index = j;
+	--a_tail->v_index;
 	a_q->f_unlink();
 	a_tail = this->f_erase_branch(a_head, a_tail + 1, delta);
 	if (a_tail == a_head || m >= A_leaf / 2) return b > 0 ? t_at{a_p, a_i} : t_at{a_p->v_next, 0};
