@@ -2,6 +2,7 @@
 #define JUMOKU__UTF8_H
 
 #include "tree.h"
+#include <cstdint>
 
 namespace jumoku
 {
