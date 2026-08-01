@@ -82,7 +82,7 @@ class t_utf8 : public t_tree<t_utf8_traits, A_branch>
 {
 	using typename t_tree<t_utf8_traits, A_branch>::t_branch;
 	using typename t_tree<t_utf8_traits, A_branch>::t_via;
-	using typename t_tree<t_utf8_traits, A_branch>::t_at;
+	using t_at = t_tree<t_utf8_traits, A_branch>::template t_at<size_t>;
 	using t_tree<t_utf8_traits, A_branch>::f_at;
 	using t_index = t_utf8_traits::t_index;
 	using t_delta = t_utf8_traits::t_delta;
@@ -222,22 +222,19 @@ class t_utf8 : public t_tree<t_utf8_traits, A_branch>
 	t_at f_erase_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, size_t a_n);
 	t_at f_merge_leaf(t_via* a_head, t_via* a_tail, t_leaf* a_p, size_t a_i);
 	t_at f_merge_leaf(t_via* a_head, t_via* a_tail, t_leaf* a_p, size_t a_i, t_leaf* a_q, size_t a_j);
-	static t_index f_finalize(t_utf8_traits::t_in_bytes&, t_at& i)
+	static t_index f_index_in_leaf(t_utf8_traits::t_in_bytes&, const t_at& i)
 	{
 		return i.v_index > 0 ? static_cast<t_leaf*>(i.v_node)->f_delta(0, i.v_index) : t_delta{};
 	}
-	static t_index f_finalize(t_utf8_traits::t_in_characters&, t_at& i)
+	static t_index f_index_in_leaf(t_utf8_traits::t_in_characters&, const t_at& i)
 	{
 		auto p = static_cast<t_leaf*>(i.v_node);
-		auto j = i.v_index;
 		auto q = p->v_data;
-		for (;; --i.v_index) {
+		for (auto n = i.v_index;; --n) {
 			while (t_utf8_traits::f_continuation(*q)) ++q;
-			if (i.v_index <= 0) break;
+			if (n <= 0) return {size_t(q - p->v_data), i.v_index};
 			++q;
 		}
-		i.v_index = q - p->v_data;
-		return {i.v_index, j};
 	}
 
 public:
@@ -441,7 +438,8 @@ public:
 			auto p = i.f_step(a_use);
 			if (p.v_index > 0) index += p.v_node->v_indices[p.v_index - 1];
 		}
-		return {i, index + f_finalize(a_use, i)};
+		auto j = f_index_in_leaf(a_use, i);
+		return {{i.v_node, j.v_byte}, index + j};
 	}
 };
 

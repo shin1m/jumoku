@@ -211,15 +211,16 @@ protected:
 		t_branch* v_node;
 		size_t v_index;
 	};
+	template<typename T_index>
 	struct t_at
 	{
 		void* v_node;
-		size_t v_index;
+		T_index v_index;
 
 		t_via f_step(auto a_use)
 		{
 			auto p = static_cast<t_branch*>(v_node);
-			size_t i = std::upper_bound(p->v_indices, p->v_indices + p->v_size, v_index, [&a_use](size_t a_x, const t_index& a_y)
+			size_t i = std::upper_bound(p->v_indices, p->v_indices + p->v_size, v_index, [&a_use](auto a_x, auto a_y)
 			{
 				return a_x < a_use(a_y);
 			}) - p->v_indices;
@@ -249,7 +250,7 @@ protected:
 	}
 	t_via* f_insert_branch(t_via* a_head, t_via* a_tail, t_index a_index, const t_index& a_delta, void* a_node, bool a_put_right, bool a_get_right);
 	t_via* f_erase_branch(t_via* a_head, t_via* a_tail, const t_index& a_delta);
-	t_at f_at(const t_index& a_index, t_via* a_path, auto a_use) const
+	auto f_at(const t_index& a_index, t_via* a_path, auto a_use) const
 	{
 		t_at i{v_root, a_use(a_index)};
 		for (size_t n = v_depth; --n > 0;) *a_path++ = i.f_step(std::forward<decltype(a_use)>(a_use));

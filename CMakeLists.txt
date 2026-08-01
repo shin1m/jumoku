@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(jumoku VERSION 202306)
+project(jumoku VERSION 202608)
 add_library(jumoku INTERFACE)
 target_compile_features(jumoku INTERFACE cxx_std_20)
 target_include_directories(jumoku INTERFACE

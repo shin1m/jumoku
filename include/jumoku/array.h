@@ -40,7 +40,7 @@ class t_array : public t_tree<T_traits, A_branch>
 {
 	using typename t_tree<T_traits, A_branch>::t_branch;
 	using typename t_tree<T_traits, A_branch>::t_via;
-	using typename t_tree<T_traits, A_branch>::t_at;
+	using t_at = t_tree<T_traits, A_branch>::template t_at<size_t>;
 	using t_tree<T_traits, A_branch>::f_at;
 	using t_index = typename T_traits::t_index;
 	using t_delta = typename T_traits::t_delta;
@@ -284,14 +284,15 @@ class t_array : public t_tree<T_traits, A_branch>
 	t_at f_erase_leaf(t_via* a_head, t_via* a_tail, const t_at& a_at, size_t a_n);
 	t_at f_merge_leaf(t_via* a_head, t_via* a_tail, t_leaf* a_p, size_t a_i);
 	t_at f_merge_leaf(t_via* a_head, t_via* a_tail, t_leaf* a_p, size_t a_i, t_leaf* a_q, size_t a_j);
-	static void f_finalize(typename T_traits::t_default&, t_at&)
+	static size_t f_index_in_leaf(typename T_traits::t_default&, const t_at& a_at)
 	{
+		return a_at.v_index;
 	}
-	static void f_finalize(auto a_use, t_at& i)
+	static size_t f_index_in_leaf(auto a_use, const auto& a_at)
 	{
-		auto p = static_cast<t_leaf*>(i.v_node);
+		auto p = static_cast<t_leaf*>(a_at.v_node);
 		auto q = p->f_values();
-		i.v_index = std::upper_bound(q, q + p->v_size, i.v_index, [&a_use](size_t a_x, const T_value& a_y)
+		return std::upper_bound(q, q + p->v_size, a_at.v_index, [&a_use](auto a_x, auto a_y)
 		{
 			return a_x < a_use(T_traits::f_index(1, a_y));
 		}) - q;
@@ -520,21 +521,21 @@ public:
 		return {f_erase_leaf(path, path + this->v_depth - 1, at, n), a_first.v_index};
 	}
 	template<typename T_use = typename T_traits::t_default>
-	t_mutable_iterator f_at(size_t a_index, T_use a_use = {})
+	t_mutable_iterator f_at(const decltype(T_use{}(t_index{}))& a_index, T_use a_use = {})
 	{
 		if (a_index >= a_use(this->v_size)) return f_end();
-		t_at i{this->v_root, a_index};
+		typename t_tree<T_traits, A_branch>::t_at<decltype(T_use{}(t_index{}))> i{this->v_root, a_index};
 		t_index index{};
 		for (size_t n = this->v_depth; --n > 0;) {
 			auto p = i.f_step(a_use);
 			if (p.v_index > 0) index += p.v_node->v_indices[p.v_index - 1];
 		}
-		f_finalize(a_use, i);
-		if (i.v_index > 0) index += T_traits::f_index(i.v_index, static_cast<t_leaf*>(i.v_node)->f_values()[i.v_index - 1]);
-		return {i, index};
+		auto j = f_index_in_leaf(a_use, i);
+		if (j > 0) index += T_traits::f_index(j, static_cast<t_leaf*>(i.v_node)->f_values()[j - 1]);
+		return {{i.v_node, j}, index};
 	}
 	template<typename T_use = typename T_traits::t_default>
-	t_constant_iterator f_at(size_t a_index, T_use a_use = {}) const
+	t_constant_iterator f_at(const decltype(T_use{}(t_index{}))& a_index, T_use a_use = {}) const
 	{
 		return const_cast<t_array*>(this)->f_at(a_index, a_use);
 	}
